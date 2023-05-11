@@ -3,7 +3,8 @@ import { Box, Container, CssBaseline, Grid, Paper, Toolbar } from '@mui/material
 import TopMenu from './TopMenu';
 import MainMenu from './MainMenu';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Height } from '@mui/icons-material';
 
 const mdTheme = createTheme();
 
@@ -16,6 +17,11 @@ export default function Layout(props: any) {
   const [projectItem, setProjectItemOpen] = React.useState(router.route.split('/').at(1) === "projects");
   const [eventItem, setEventItemOpen] = React.useState(router.route.split('/').at(1) === "events");
   const [channelItem, setChannelItemOpen] = React.useState(router.route.split('/').at(1) === "channels");
+  
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => (document.body.style.overflow = "scroll");
+  });
 
   const handleSideBar = () => {
     setSideBar(!sideBar);
@@ -42,7 +48,7 @@ export default function Layout(props: any) {
   }
   return (
     <ThemeProvider theme={mdTheme}>
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: 'flex', height: "100%" }}>
         <CssBaseline />
         <TopMenu sideBarOpen={sideBar} setSideBar={handleSideBar} />
         <MainMenu sideBarOpen={sideBar} setSideBar={handleSideBar}

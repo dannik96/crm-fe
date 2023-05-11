@@ -6,7 +6,8 @@ import { TaskParticipantsColumns } from "@/data/headers/TaskParticipants";
 import { TaskPostsColumns } from "@/data/headers/TaskPosts";
 import { TaskSpentsColumns } from "@/data/headers/TaskSpents";
 import { Box, Button, Divider, FormControl, FormGroup, Grid, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
-import React, { useRef } from "react";
+import { useRouter } from "next/router";
+import React, { useEffect, useRef, useState } from "react";
 
 const data = {
     name: "Task name",
@@ -20,7 +21,7 @@ const data = {
     { id: 4, name: "Labelname1", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
     { id: 5, name: "Labelname1", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." }],
     state: { name: "State name", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit." },
-    project: {id: 1, name : "Project name"},
+    project: { id: 1, name: "Project name" },
 
     spent:
         [{ id: 1, date: "15.4.2023", time: 3600000, user: { id: 1, name: "User user" } },
@@ -52,7 +53,14 @@ const data = {
 
 export default function TaskDetailPage(props: any) {
     const commentRef = useRef();
-    const [value, setValue] = React.useState(0);
+    const [value, setValue] = useState(0);
+    const [task, setTask] = useState();
+    const [spentTime, setSpentTime] = useState([]);
+    const [posts, setPosts] = useState([]);
+    const [participants, setParticipants] = useState([]);
+    const [comments, setComments] = useState();
+    const router = useRouter();
+
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
@@ -62,27 +70,146 @@ export default function TaskDetailPage(props: any) {
         data.label = labels;
     }
 
-    const handleAddComment = (props: any) => {
+    const handleAddComment = async (props: any) => {
         console.log(commentRef.current.value)
+        if (router.query.taskId === undefined || commentRef === undefined || commentRef.current === undefined 
+            || commentRef.current.value === "") {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comment`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+                "text": commentRef.current.value,
+                "person": {
+                    "id": 5
+                },
+                "task" : {
+                    "id" : router.query.taskId
+                }
+            })
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+        }
+    }
+
+    useEffect(() => {
+        fetchTask();
+        fetchTaskSpents();
+        fetchPosts();
+        // TODO - need to add to DB and model
+        //fetchParticipants();
+        fetchComments();
+    }, [router])
+    async function fetchComments() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/comments", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setComments(json)
+        }
+    }
+    async function fetchPosts() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/posts", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setPosts(json)
+        }
+    }
+
+    async function fetchParticipants() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/spent-time", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setSpentTime(json)
+        }
+    }
+
+    async function fetchTaskSpents() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/spent-time", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setSpentTime(json)
+        }
+    }
+
+    async function fetchTask() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setTask(json)
+        }
     }
 
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xl={12} xs={12}>
-                <Stack spacing={3}>
-                    <TaskDetail
-                        showDescription={true}
-                        showEditButton={true}
-                        name={data.name}
-                        assignee={data.assignee}
-                        label={data.label}
-                        state={data.state}
-                        description={data.description}
-                        deadline={data.deadline}
-                        priority={data.priority}
-                        project={data.project}
-                        updateLabels={setLabels} />
-                </Stack>
+                {
+                    task ?
+                        <TaskDetail
+                            task={task}
+                            showDescription={true}
+                            showEditButton={true}
+                            name={data.name}
+                            assignee={data.assignee}
+                            label={data.label}
+                            state={data.state}
+                            description={data.description}
+                            deadline={data.deadline}
+                            priority={data.priority}
+                            project={data.project}
+                            updateLabels={setLabels} />
+                        : <React.Fragment></React.Fragment>}
             </Grid>
             <Grid item xl={4}>
                 <Paper style={{ height: 500, width: '100%' }}>
@@ -101,12 +228,12 @@ export default function TaskDetailPage(props: any) {
                     </Box>
                     <TabPanel value={value} index={0}>
                         <Box height={460} padding={2}>
-                            <CustomTable columns={TaskSpentsColumns} rows={data.spent} />
+                            <CustomTable columns={TaskSpentsColumns} rows={spentTime} />
                         </Box>
                     </TabPanel>
                     <TabPanel value={value} index={1}>
                         <Box height={460} padding={2}>
-                            <CustomTable columns={TaskPostsColumns} rows={data.posts} />
+                            <CustomTable columns={TaskPostsColumns} rows={posts} />
                         </Box>
                     </TabPanel>
                     <TabPanel value={value} index={2}>
@@ -131,7 +258,7 @@ export default function TaskDetailPage(props: any) {
                     <Divider variant="middle" style={{ marginBottom: 10 }} />
                     <Box sx={{ paddingX: 2 }}>
                         <Stack spacing={3} py={2}>
-                            {Array.from(data.comments).map((value, index) => (
+                            {Array.from(comments ? comments : []).map((value, index) => (
                                 <TaskComment comment={value} key={index} />
                             ))}
                         </Stack>

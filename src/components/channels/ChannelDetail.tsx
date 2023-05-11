@@ -22,6 +22,7 @@ function getTypes(label: any, index : any, addHandler: Function, removeHandler: 
 }
 
 export default function ChannelDetail(props: any) {
+    const channel = props.channel;
     const [types, setTypes] = useState(props.types);
     const [assignee, setAssignee] = useState(props.assignee);
     const [editMode, setEditMode] = useState(false);
@@ -75,7 +76,7 @@ export default function ChannelDetail(props: any) {
                                 spacing={1}>
                                 <TextField
                                     id="name"
-                                    defaultValue={props.name}
+                                    defaultValue={channel.name}
                                     InputProps={{
                                         readOnly: editMode ? false : true,
                                         disableUnderline: editMode ? false : true,
@@ -91,7 +92,7 @@ export default function ChannelDetail(props: any) {
                                 <TextField
                                     id="location"
                                     label="Location"
-                                    defaultValue={props.location}
+                                    defaultValue={channel.location}
                                     InputProps={{
                                         readOnly: editMode ? false : true,
                                         disableUnderline: editMode ? false : true
@@ -100,7 +101,7 @@ export default function ChannelDetail(props: any) {
                                 />
                             </Stack>
                             <Stack direction="row" spacing={1}>
-                                {Array.from(types).map((value, index) => (
+                                {Array.from(channel.channelTypes).map((value, index) => (
                                     getTypes(value, index, handleAddTypes, handleRemoveTypes) 
                                 ))}
                             </Stack>
@@ -132,7 +133,7 @@ export default function ChannelDetail(props: any) {
                         <Divider variant="middle" />
                         <Box px={{ xl: 2, xs: 3 }}
                             py={{ xl: 2, xs: 2 }}>
-                            <Typography>{props.description}</Typography>
+                            <Typography>{channel.description}</Typography>
                         </Box>
                     </React.Fragment> : <React.Fragment></React.Fragment>
             }

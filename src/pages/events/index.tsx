@@ -1,24 +1,40 @@
 import PostTable from "@/components/channels/posts/PostTable";
 import CustomTable from "@/components/customs/CustomTable";
 import { Box, Grid, Paper } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
 import moment from 'moment';
 
-import { Posts } from "@/data/headers/Posts";
 import { EventTableColumns, EventTableData, EventTableOptions } from "@/data/headers/Events";
 
-const data = [{
-    id: 1,
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin feugiat lorem varius cursus feugiat. Aenean tincidunt velit at nibh dapibus, blandit dictum tortor ultrices. Nulla porttitor sem a ex imperdiet, quis volutpat odio malesuada. In fringilla ante posuere, euismod enim nec, consectetur risus. Maecenas gravida ipsum finibus porttitor faucibus. Ut consectetur nisi ac nulla lobortis, vitae vehicula leo ornare. Phasellus at varius justo, eget maximus mauris. Curabitur placerat tortor id iaculis scelerisque. Fusce facilisis at felis vel sollicitudin. Vivamus sapien libero, posuere sed egestas nec, imperdiet nec massa. Interdum et malesuada fames ac ante ipsum primis in faucibus. Duis tempus.",
-    author: { id: 1, name: "user" },
-    postDate: "25.4.2023"
-}];
+function getFirstDayOfMonth(year, month) {
+    return new Date(year, month, 1);
+}
 
 export default function Events(props: any) {
-    const [value, setValue] = useState(new Date());
-    console.log(new Date())
+    const [value, setValue] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+        fetchChannels();
+    }, [])
+
+    async function fetchChannels() {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/event/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            setPosts(json)
+        }
+    }
+
     const onChange = (params: any) => {
         // when date button is clicked
         console.log("on change")
@@ -39,12 +55,6 @@ export default function Events(props: any) {
 
     }
 
-    const mark = [
-        '04-04-2023',
-        '08-04-2023',
-        '15-04-2023'
-    ]
-
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xs={4}>
@@ -63,7 +73,8 @@ export default function Events(props: any) {
                             onViewChange={changeView}
                             onActiveStartDateChange={onActiveStartDateChange}
                             tileClassName={({ activeStartDate, date, view }) => {
-                                if (mark.find(x => x === moment(date).format("DD-MM-YYYY"))) {
+                                if (posts.find(x => new Date(x.startDate).toDateString() >= new Date(date).toDateString("DD-MM-YYYY") 
+                                && new Date(x.endDate).toDateString() <= new Date(date).toDateString("DD-MM-YYYY"))) {
                                     return 'highlight'
                                 }
                             }} />
@@ -78,7 +89,12 @@ export default function Events(props: any) {
                         flexDirection: 'column',
                     }}
                 >
-                    <PostTable data={EventTableData} columns={EventTableColumns} options={EventTableOptions} />
+                    {posts.length !== 0 ?
+                        <PostTable data={posts.filter(post => {
+                            return value <= new Date(post.endDate) && getFirstDayOfMonth(value.getFullYear(), value.getMonth() + 1) > new Date(post.endDate)
+                        }
+                        )} columns={EventTableColumns} options={EventTableOptions} />
+                        : <React.Fragment />}
                 </Paper>
             </Grid>
         </Grid>);

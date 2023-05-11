@@ -1,4 +1,5 @@
 import PostTableRow from "@/components/channels/posts/PostTableRow";
+import { GridValueGetterParams } from "@mui/x-data-grid";
 
 export const PostTableColumns = [
     {
@@ -10,25 +11,24 @@ export const PostTableColumns = [
         label: "Name"
     },
     {
-        name: "from",
-        label: "From"
+        name: "author",
+        label: "Author",
+        options: {
+            customBodyRender: (value, tableMeta, updateValue) => {
+                return value.name + " " + value.surname
+            }
+        }
     },
     {
-        name: "to",
-        label: "To"
+        name: "postDate",
+        label: "Post date",
+        options: {
+            customBodyRender: (value, tableMeta, updateValue) => {
+                return new Date(value).toLocaleDateString()
+            }
+        }
     }
 ];
-
-export const PostTableData =
-    [{ id: 1, name: "Gabby George", from: "14.04.2022", to: "14.04.2022" },
-    { id: 2, name: "Gabby George", from: "14.04.2022", to: "14.04.2022" },
-    { id: 3, name: "Gabby George", from: "14.04.2022", to: "14.04.2022" },
-    { id: 4, name: "Gabby George", from: "14.04.2022", to: "14.04.2022" },
-    { id: 5, name: "Gabby George", from: "14.04.2022", to: "14.04.2022" },
-    { id: 6, name: "Gabby George", from: "14.04.2022", to: "14.04.2022" },
-    { id: 7, name: "Gabby George", from: "14.04.2022", to: "14.04.2022" },
-    { id: 8, name: "Gabby George", from: "14.04.2022", to: "14.04.2022" }
-    ];
 
 export const PostTableOptions = {
     filter: true,
@@ -45,7 +45,7 @@ export const PostTableOptions = {
     renderExpandableRow: (rowData: any, rowMeta: any) => {
         console.log(rowData, rowMeta);
         return (
-            <PostTableRow rowData={rowData}/>
+            <PostTableRow rowData={rowData} />
         );
     }
 };

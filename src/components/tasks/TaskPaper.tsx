@@ -1,5 +1,6 @@
-import { Box, Button, Chip, Divider, Grid, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Chip, Container, Divider, Grid, Icon, Paper, Stack, TextField, Typography } from "@mui/material";
 import Link from "next/link";
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const data = {
     name: "Tootbrush",
@@ -13,9 +14,11 @@ const data = {
 
 
 export default function TaskPaper(props: any) {
+    const task = props.task;
+
     return (
         <Grid item xs={12} md={4} lg={4}>
-            <Link href="/projects/tasks/1" style={{ textDecoration: 'none' }}>
+            <Link href={"/projects/tasks/" + task.id} style={{ textDecoration: 'none' }}>
                 <Paper
                     sx={{
                         p: 2,
@@ -24,71 +27,74 @@ export default function TaskPaper(props: any) {
                     }}
                 >
                     <Box sx={{ my: 3, mx: 2, mb: 1 }}>
-                        <Grid container alignItems="center" columnSpacing={2}>
+                        <Grid container alignItems="baseline" columnSpacing={2}>
                             <Grid item xs={11}>
                                 <Typography gutterBottom variant="h3" component="div">
-                                    Toothbrush
+                                    {task.name}
                                 </Typography>
                             </Grid>
                             <Grid item xs={1}>
-                                <Typography gutterBottom variant="h6" component="div">
-                                    !!
-                                </Typography>
+                                <Icon>
+                                    <VisibilityIcon color="primary"/>
+                                </Icon>
                             </Grid>
                             <Grid item xs={11}>
                                 <Typography gutterBottom variant="h5" component="div">
-                                    {data.assignee}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={1}>
-                                <Typography gutterBottom variant="h6" component="div">
-                                    {data.timeSpent}
+                                    {task.assignedPerson ? task.assignedPerson.name + " " + task.assignedPerson.surname : ""}
                                 </Typography>
                             </Grid>
                         </Grid>
                     </Box>
                     <Divider variant="middle" />
                     <Box sx={{ m: 2 }}>
-                        <Grid container alignItems="center">
-                            <Grid item xs>
-                                <TextField
-                                    id="standard-read-only-input"
-                                    label="State"
-                                    defaultValue={data.state}
-                                    InputProps={{
-                                        readOnly: true,
-                                        disableUnderline: true
-                                    }}
-                                    variant="standard"
-                                />
-                            </Grid>
-                            <Grid item xs>
-                                <TextField
-                                    id="standard-read-only-input"
-                                    label="Deadline"
-                                    defaultValue={data.deadline}
-                                    InputProps={{
-                                        readOnly: true,
-                                        disableUnderline: true
-                                    }}
-                                    variant="standard"
-                                />
-                            </Grid>
-                        </Grid>
-                        <Stack direction="row" spacing={1} flexWrap={'wrap'} useFlexGap>
-                            {Array.from(data.labels).map((value, index) => (
+                        <Stack direction={'column'} spacing={1}>
+                            <TextField
+                                id="standard-read-only-input"
+                                label="Project"
+                                defaultValue={task.project.name}
+                                InputProps={{
+                                    readOnly: true,
+                                    disableUnderline: true
+                                }}
+                                variant="standard"
+                            />
+                            <Stack direction="row" spacing={1} flexWrap={'wrap'} alignItems={'center'} useFlexGap>
+
+                                <Typography variant="body1">State</Typography>
                                 <Chip
-                                    label={value}
-                                    key={index}
+                                    label={task.state.name}
+                                    variant="outlined"
+                                    color="primary"
                                 />
-                            ))}
+                            </Stack>
+                            <Stack direction="row" spacing={1} flexWrap={'wrap'} alignItems={'center'} useFlexGap>
+                                <Typography variant="body1">Labels</Typography>
+                                {Array.from(task.taskLabels).map((value) => (
+                                    <Chip
+                                        label={value.name}
+                                        key={value.id}
+                                        variant="outlined"
+                                        color="primary"
+                                    />
+                                ))}
+                            </Stack>
+                            <TextField
+                                id="standard-read-only-input"
+                                label="Deadline"
+                                defaultValue={task.deadline ? new Date(task.deadline).toLocaleDateString() : " "}
+                                InputProps={{
+                                    readOnly: true,
+                                    disableUnderline: true
+                                }}
+                                variant="standard"
+                            />
                         </Stack>
                     </Box>
                     <Box sx={{ mx: 2 }}>
                         <Grid container>
                             <Grid item>
                                 <Typography variant="body1">
-                                    {data.description.length > 150 ? data.description.substring(0, 147) + "..." : data.description}
+                                    {task.description.length > 150 ? task.description.substring(0, 147) + "..." : task.description}
                                 </Typography>
                             </Grid>
                         </Grid>

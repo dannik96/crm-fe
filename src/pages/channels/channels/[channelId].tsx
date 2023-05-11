@@ -7,7 +7,8 @@ import { TaskParticipantsColumns } from "@/data/headers/TaskParticipants";
 import { TaskPostsColumns } from "@/data/headers/TaskPosts";
 import { TaskSpentsColumns } from "@/data/headers/TaskSpents";
 import { Box, Divider, Grid, Paper, Tab, Tabs, Typography } from "@mui/material";
-import React from "react";
+import { useRouter } from "next/router";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { types } from "util";
 
@@ -45,67 +46,86 @@ const data = {
 
 
 export default function Channel(props: any) {
-    const [value, setValue] = React.useState(0);
+    const [channel, setChannel] = useState(undefined);
+    const router = useRouter();
+
+    useEffect(() => {
+        fetchChannel();
+    }, [router])
+
+    async function fetchChannel() {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + router.query.channelId, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            setChannel(json)
+        }
+    }
+
     const setTypes = (types: any) => {
         console.log("set Labels")
         data.types = types;
     }
-    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-        setValue(newValue);
-    };
 
     return (
         <Grid container padding={4} spacing={3}>
-            <Grid item xl={12} xs={12}>
-                <ChannelDetail
-                    name={data.name}
-                    location={data.location}
-                    description={data.description}
-                    types={data.types}
-                    numberOfPosts={data.numberOfPosts}
-                    showDescription={true}
-                    showEditButton={true}
-                    updateTypes={setTypes} />
-            </Grid>
-            <Grid item xl={4}>
-                <Paper style={{ height: 500, width: '100%' }}>
-                    <Box px={3} py={2}>
-                        <Typography variant="h6">
-                            Audiences
-                        </Typography>
-                    </Box>
-                    <Divider variant="fullWidth" />
-                    <Box height={440} px={3} py={2}>
-                        <CustomTable columns={AudiencesColumns} rows={data.audiences} />
-                    </Box>
-                </Paper>
-            </Grid>
-            <Grid item xl={4}>
-                <Paper style={{ height: 500, width: '100%' }}>
-                    <Box px={3} py={2}>
-                        <Typography variant="h6">
-                            Posts
-                        </Typography>
-                    </Box>
-                    <Divider variant="fullWidth" />
-                    <Box height={440} px={3} py={2}>
-                        <CustomTable columns={TaskPostsColumns} rows={data.posts} />
-                    </Box>
-                </Paper>
-            </Grid>
-            <Grid item xl={4}>
-                <Paper style={{ height: 500, width: '100%' }}>
-                    <Box px={3} py={2}>
-                        <Typography variant="h6">
-                            Projects
-                        </Typography>
-                    </Box>
-                    <Divider variant="fullWidth" />
-                    <Box height={440} px={3} py={2}>
-                        <CustomTable columns={ProjectsColumns} rows={data.projects} />
-                    </Box>
-                </Paper>
-            </Grid>
+            {channel ?
+                <Grid item xl={12} xs={12}>
+                    <ChannelDetail
+                        channel={channel}
+                        showDescription={true}
+                        showEditButton={true}
+                        updateTypes={setTypes} />
+                </Grid>
+                : <React.Fragment />}
+            {channel ?
+                <Grid item xl={4}>
+                    <Paper style={{ height: 500, width: '100%' }}>
+                        <Box px={3} py={2}>
+                            <Typography variant="h6">
+                                Audiences
+                            </Typography>
+                        </Box>
+                        <Divider variant="fullWidth" />
+                        <Box height={440} px={3} py={2}>
+                            <CustomTable columns={AudiencesColumns} rows={channel.audiences} />
+                        </Box>
+                    </Paper>
+                </Grid> : <React.Fragment></React.Fragment>}
+            {channel ?
+                <Grid item xl={4}>
+                    <Paper style={{ height: 500, width: '100%' }}>
+                        <Box px={3} py={2}>
+                            <Typography variant="h6">
+                                Posts
+                            </Typography>
+                        </Box>
+                        <Divider variant="fullWidth" />
+                        <Box height={440} px={3} py={2}>
+                            <CustomTable columns={TaskPostsColumns} rows={channel.posts} />
+                        </Box>
+                    </Paper>
+                </Grid> : <React.Fragment />}
+            {channel ?
+                <Grid item xl={4}>
+                    <Paper style={{ height: 500, width: '100%' }}>
+                        <Box px={3} py={2}>
+                            <Typography variant="h6">
+                                Projects
+                            </Typography>
+                        </Box>
+                        <Divider variant="fullWidth" />
+                        <Box height={440} px={3} py={2}>
+                            <CustomTable columns={ProjectsColumns} rows={channel.projects} />
+                        </Box>
+                    </Paper>
+                </Grid> : <React.Fragment />}
         </Grid>
     )
 }

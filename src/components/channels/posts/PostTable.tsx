@@ -6,7 +6,7 @@ const ExpandableRowTable = (props: any) => {
 
     return (
         <MUIDataTable
-            title={props.header ? props.header : "ACME Employee list"}
+            title={props.header ? props.header : ""}
             data={props.data}
             columns={props.columns}
             options={props.options}

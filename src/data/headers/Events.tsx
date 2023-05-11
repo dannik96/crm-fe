@@ -1,4 +1,5 @@
 import PostTableRow from "@/components/channels/posts/PostTableRow";
+import EventTableRow from "@/components/events/EventTableRow";
 
 export const EventTableColumns = [
     {
@@ -10,25 +11,14 @@ export const EventTableColumns = [
         label: "Name"
     },
     {
-        name: "postDate",
-        label: "Post date"
+        name: "startDate",
+        label: "Start date"
     },
     {
-        name: "state",
-        label: "State"
+        name: "endDate",
+        label: "End date"
     }
 ];
-
-export const EventTableData =
-    [{ id: 1, name: "Gabby George", postDate: "14.04.2022", state: "Open" },
-    { id: 2, name: "Gabby George", postDate: "14.04.2022", state: "Open" },
-    { id: 3, name: "Gabby George", postDate: "14.04.2022", state: "Open" },
-    { id: 4, name: "Gabby George", postDate: "14.04.2022", state: "Open" },
-    { id: 5, name: "Gabby George", postDate: "14.04.2022", state: "Open" },
-    { id: 6, name: "Gabby George", postDate: "14.04.2022", state: "Open" },
-    { id: 7, name: "Gabby George", postDate: "14.04.2022", state: "Open" },
-    { id: 8, name: "Gabby George", postDate: "14.04.2022", state: "Open" }
-    ];
 
 export const EventTableOptions = {
     filter: true,
@@ -45,7 +35,7 @@ export const EventTableOptions = {
     renderExpandableRow: (rowData: any, rowMeta: any) => {
         console.log(rowData, rowMeta);
         return (
-            <PostTableRow rowData={rowData}/>
+            <EventTableRow rowData={rowData}/>
         );
     }
 };

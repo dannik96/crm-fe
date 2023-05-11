@@ -1,43 +1,119 @@
+import PostTable from '@/components/channels/posts/PostTable';
 import ProjectDetail from '@/components/projects/ProjectDetail';
-import TaskByStatePaper from '@/components/projects/tasks/TaskByStatePaper';
-import { Grid, Stack } from '@mui/material';
+import { TaskTableColumns, TaskTableInterface } from '@/data/headers/Tasks';
+import { Grid, Paper, Stack } from '@mui/material';
 import { useRouter } from 'next/router';
+import React from 'react';
+import { useEffect, useState } from 'react';
 
-const data = {
-    name: "Tootbrush Tootbrush Tootbrush ",
-    tasks: 12,
-    manager: "Manager",
-    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Mauris dolor felis, sagittis at, luctus sed, aliquam non, tellus. Etiam commodo dui eget wisi. Curabitur bibendum justo non orci. Integer lacinia. Etiam ligula pede, sagittis quis, interdum ultricies, scelerisque eu. Nulla pulvinar eleifend sem. Curabitur sagittis hendrerit ante. Nullam sit amet magna in magna gravida vehicula. Morbi scelerisque luctus velit. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. Cras elementum. Etiam sapien elit, consequat eget, tristique non, venenatis quis, ante.",
-    start: "2.2.2023",
-    deadline: "2.2.2024",
-    state: "Open",
-    category: "Hiring"
-}
 
 function DetailPage() {
     const router = useRouter();
+    const [project, setProject] = useState();
+    const [states, setStates] = useState([]);
+    const [tasks, setTasks] = useState([]);
 
-    console.log(router.query.projectId);
+    console.log("Project")
+    useEffect(() => {
+        fetchProject();
+        fetchTasks();
+    }, [router])
+
+    async function fetchTasks() {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId + "/tasks", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            setTasks(json)
+        }
+    }
+
+    async function fetchProject() {
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setProject(json)
+            console.log(json)
+        }
+    }
+
+    
+    function modifyTasks(tasks: any[]) {
+        let modifiedList: TaskTableInterface[] = [];
+        for (let i = 0; i < tasks.length; i++) {
+            modifiedList.push({
+                id: tasks[i].id,
+                name: tasks[i].name,
+                deadline: tasks[i].deadline ? new Date(tasks[i].deadline).toLocaleDateString("cs-CS") : "", 
+                assignee: tasks[i].assignedPerson ? tasks[i].assignedPerson.name + " " + tasks[i].assignedPerson.surname : "",
+                state: tasks[i].state.name
+            })
+        }
+        console.log(modifiedList);
+        return modifiedList;
+    }
+
+    const TaskTableOptions = {
+        filter: true,
+        onFilterChange: (changedColumn: any, filterList: any) => {
+            console.log(changedColumn, filterList);
+        },
+        selectableRows: "none",
+        filterType: "dropdown",
+        responsive: "simple",
+        tableId: "Posts",
+        pagination: false,
+        elevation: 0,
+        onRowClick: (rowData: any[], rowState: any[]) => {
+            console.log(rowData)
+            handleClick(rowData[0]);
+        },
+    };
+
+    function handleClick(id: any) {
+        console.log(id)
+        router.push("/projects/tasks/" + id);
+    }
 
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xl={12} xs={12}>
                 <Stack spacing={3}>
-                    <ProjectDetail
-                        name={data.name}
-                        manager={data.manager}
-                        description={data.description}
-                        start={data.start}
-                        deadline={data.deadline}
-                        state={data.state}
-                        category={data.category}
+                    {project === undefined ? <React.Fragment></React.Fragment> : <ProjectDetail
+                        project={project}
                         showDescription={false}
-                        showEditButton={false} />
-                    <TaskByStatePaper label={"Open"} />
-                    <TaskByStatePaper label={"Open"} />
+                        showEditButton={false} />}
+                    <Grid item xs={12}>
+                        <Paper
+                            sx={{
+                                p: 2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <PostTable data={modifyTasks(tasks)} columns={TaskTableColumns} options={TaskTableOptions} />
+                        </Paper>
+                    </Grid>
                 </Stack>
             </Grid>
         </Grid>);
 }
 
 export default DetailPage;
+
+

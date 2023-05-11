@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import React from "react";
+import Link from "next/link";
 
 function getLabels(label: any, addHandler: Function, removeHandler: Function) {
     const handleClick = () => {
@@ -22,19 +23,17 @@ function getLabels(label: any, addHandler: Function, removeHandler: Function) {
         />);
 }
 
-export default function PostTableRow(props: any) {
+export default function EventTableRow(props: any) {
     console.log(props.rowData)
-    const [post, setPost] = useState(undefined);
-    const [postStates, setPostStates] = useState([]);
+    const [event, setEvent] = useState(undefined);
     const [editMode, setEditMode] = useState(false);
 
     useEffect(() => {
-        fetchPost();
-        fetchPostStates();
+        fetchEvent();
     }, [])
 
-    async function fetchPost() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post/` + props.rowData[0], {
+    async function fetchEvent() {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/event/` + props.rowData[0], {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + localStorage.getItem("token")
@@ -44,22 +43,7 @@ export default function PostTableRow(props: any) {
         if (res.ok) {
             const json = await res.json()
             console.log(json)
-            setPost(json)
-        }
-    }
-
-    async function fetchPostStates() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post-state`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setPostStates(json)
+            setEvent(json)
         }
     }
 
@@ -97,7 +81,7 @@ export default function PostTableRow(props: any) {
     }
     return (
         <TableRow>
-            {post ?
+            {event ?
                 <TableCell colSpan={props.rowData.length + 1}>
                     <Grid container py={3} px={2}>
                         <Grid item xs={11}>
@@ -105,7 +89,7 @@ export default function PostTableRow(props: any) {
                                 <TextField
                                     id="name"
                                     label="Name"
-                                    defaultValue={post.name}
+                                    defaultValue={event.name}
                                     InputProps={{
                                         disabled: editMode ? false : true,
                                         disableUnderline: editMode ? false : true
@@ -117,9 +101,9 @@ export default function PostTableRow(props: any) {
                                     }}
                                 />
                                 <TextField
-                                    id="postDate"
-                                    label="Posting date"
-                                    defaultValue={new Date(post.postDate).toLocaleDateString()}
+                                    id="startDate"
+                                    label="Start date"
+                                    defaultValue={new Date(event.startDate).toLocaleDateString()}
                                     InputProps={{
                                         disabled: editMode ? false : true,
                                         disableUnderline: editMode ? false : true
@@ -129,52 +113,33 @@ export default function PostTableRow(props: any) {
                                         "& fieldset": { border: editMode ? 1 : 'none' },
                                         maxWidth: 250,
                                     }}
-
                                 />
-
-                                <FormControl variant="standard" sx={{ minWidth: 80 }}>
-                                    <InputLabel id="state-label">State</InputLabel>
-                                    <Select
-                                        labelId="state-label"
-                                        id="state"
-                                        value={post.postState.name}
-                                        label="State"
-                                        onChange={handleChange}
-                                        disableUnderline={editMode ? false : true}
-                                        sx={{
-                                            "& fieldset": { border: editMode ? 1 : 'none' },
-                                            maxWidth: 250,
-                                        }}
-                                        disabled={!editMode}
-                                    >
-                                        {Array.from(postStates).map(postState => {
-                                            console.log(postState)
-                                            return <MenuItem key={postState.id} value={postState.name}>{postState.name}</MenuItem>
-                                        }
-                                        )}
-                                    </Select>
-                                </FormControl>
                                 <TextField
-                                    id="postDate"
-                                    label="Author"
-                                    defaultValue={post.author ? post.author.name + " " + post.author.surname : ""}
+                                    id="endDate"
+                                    label="End date"
+                                    defaultValue={new Date(event.endDate).toLocaleDateString()}
                                     InputProps={{
-                                        disabled: true,
-                                        disableUnderline: true
+                                        disabled: editMode ? false : true,
+                                        disableUnderline: editMode ? false : true
                                     }}
                                     variant="standard"
                                     sx={{
-                                        "& fieldset": { border: 'none' },
+                                        "& fieldset": { border: editMode ? 1 : 'none' },
                                         maxWidth: 250,
                                     }}
                                 />
                                 <Stack direction={'row'} spacing={2} mt={2} alignItems={'center'}>
                                     <Typography variant="body1">Tasks: </Typography>
-                                    {Array.from(post.tasks).map((value, index) => (
+                                    {Array.from(event.eventTypes).map((value, index) => (
                                         getLabels(value, handleAddTask, handleRemoveTask)
                                     ))}
                                 </Stack>
-
+                                <Stack direction={'row'} spacing={2} mt={2} alignItems={'center'}>
+                                    <Typography>Project: </Typography>
+                                    <Link href={"/projects/projects/" + event.project.id} >
+                                        <Typography>{event.project.name}</Typography>
+                                    </Link>
+                                </Stack>
                             </Stack>
                         </Grid>
                         <Grid item xs={1}>
@@ -197,7 +162,7 @@ export default function PostTableRow(props: any) {
                     <Divider variant="middle" />
                     <Box py={2} px={3}>
                         <Typography variant="body1">
-                            {post.content}
+                            {event.description}
                         </Typography>
                     </Box>
                 </TableCell> : <React.Fragment />

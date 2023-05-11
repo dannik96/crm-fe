@@ -2,8 +2,9 @@ import LabelData from '@/components/customs/LabelData';
 import Stats from '@/components/projects/Stats';
 import { Grid, Paper } from '@mui/material';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ProjectDetail from '@/components/projects/ProjectDetail';
+import { json } from 'stream/consumers';
 
 const data = {
     name: "Tootbrush Tootbrush Tootbrush ",
@@ -17,23 +18,40 @@ const data = {
 }
 
 function DetailPage(props: any) {
+    const [project, setProject] = useState();
     const router = useRouter();
-    console.log(router)
-    console.log(router.query.projectId);
+    
+    console.log("Project")
+    useEffect(() => {
+        fetchProject();
+    }, [router])
+
+
+    async function fetchProject() {
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setProject(json)
+            console.log(json)
+        }
+    }
 
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xl={12} xs={12}>
-                <ProjectDetail
-                    name={data.name}
-                    manager={data.manager}
-                    description={data.description}
-                    start={data.start}
-                    deadline={data.deadline}
-                    state={data.state}
-                    category={data.category} 
+                {project === undefined ? <React.Fragment></React.Fragment>: <ProjectDetail
+                    project={project}
                     showDescription={true}
-                    showEditButton={true}/>
+                    showEditButton={true} />}
             </Grid>
             {/*<Grid item xl={1}>
                 <Stack
@@ -80,7 +98,7 @@ function DetailPage(props: any) {
                     </Stats>
                 </Paper>
             </Grid>
-            
+
             <Grid item xl={3}>
                 <Paper sx={{
                     p: 2,

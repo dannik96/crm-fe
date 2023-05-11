@@ -6,7 +6,7 @@ import { useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 
-function getLabels(label: any, addHandler: Function, removeHandler: Function) {
+function getLabels(label: any, addHandler: Function, removeHandler: Function, editable: boolean) {
     const handleClick = () => {
         removeHandler(label.id)
     };
@@ -18,12 +18,15 @@ function getLabels(label: any, addHandler: Function, removeHandler: Function) {
         <Chip
             label={label.name}
             onClick={handleClick}
-            onDelete={handleDelete}
-            id={label}
+            id={label.id}
+            color="primary"
+            clickable={editable}
+            variant={editable ? "filled" : "outlined"}
+            style={{ minWidth: 100 }}
         />);
 }
 
-function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Function) {
+function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Function, disabled: boolean) {
 
     const handleDeleteAssignee = () => {
         unnassigneHandler(user.id);
@@ -36,12 +39,13 @@ function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Fun
     return (
         <Chip
             style={{ minWidth: 100 }}
-            id={user ? user.id : undefined}
-            label={user ? <Typography minWidth={50}>{user.name}</Typography> : <Typography minWidth={50}></Typography>}
-            variant="outlined"
+            id={user ? user.id : -1}
+            label={user ? <Typography minWidth={50}>{user.name + " " + user.surname}</Typography> : <Typography minWidth={50}></Typography>}
+            variant={disabled ? "filled" : "outlined"}
             color="primary"
             onClick={handleClick}
-            onDelete={handleDeleteAssignee}
+            onDelete={disabled ? handleDeleteAssignee : undefined}
+            clickable={disabled}
             avatar={<Avatar>{user ? user.name.charAt(0) : ""}</Avatar>} />
     )
 }
@@ -56,10 +60,10 @@ const styles = {
 }
 
 export default function TaskDetail(props: any) {
-    const [labels, setLabels] = useState(props.label);
-    const [assignee, setAssignee] = useState(props.assignee);
-    const [editMode, setEditMode] = useState(false);
-    console.log(assignee)
+    const task = props.task;
+    const [labels, setLabels] = useState(task.taskLabels);
+    const [assignee, setAssignee] = useState(task.assignedPerson);
+    const [disabled, setDisabled] = useState(true);
     // TODO
     const handleAddLabels = (id: any) => {
 
@@ -74,17 +78,15 @@ export default function TaskDetail(props: any) {
 
     const handleDeleteAssignee = (props: any) => {
         console.log("delete");
-        console.log(props);
         setAssignee(undefined)
     }
 
     const handleChangeAssigne = (props: any) => {
         console.log("chenge assignee");
-        console.log(props);
     }
 
     const handleSave = (props: any) => {
-        setEditMode(false);
+        setDisabled(true);
         console.log(props)
     }
 
@@ -107,29 +109,29 @@ export default function TaskDetail(props: any) {
                                 direction="column"
                                 alignItems="flex-start"
                                 justifyContent="flex-around"
-                                minWidth={{ xl: 400, xs: 200 }}
-                                spacing={1}>
+                                minWidth={{ xl: 350, xs: 200 }}
+                                spacing={2}>
                                 <TextField
                                     id="name"
-                                    defaultValue={props.name}
+                                    defaultValue={task.name}
                                     InputProps={{
-                                        readOnly: editMode ? false : true,
-                                        disableUnderline: editMode ? false : true,
-                                        style: { fontSize: 40 }
-                                    }}
+                                        readOnly: disabled,
+                                        disableUnderline: disabled,
+                                        style: { fontSize: 40, padding: 0 },
 
-                                    variant="outlined"
+                                    }}
+                                    variant="standard"
                                     sx={{
-                                        "& fieldset": { border: editMode ? 1 : 'none' },
-                                        padding: 0
+                                        "& fieldset": { border: disabled ? 1 : 'none' },
+                                        "#name": { padding: 0 },
+                                        padding: 0,
                                     }}
                                 />
-                                <Stack sx={{ padding: "0 14px" }} direction="row" spacing={2}>
-                                    <Link href={"/projects/projects/" + props.project.id} style={{ textDecoration: 'none' }}>
-                                        <Typography variant="h6" component="div">{props.project.name}</Typography>
-                                    </Link>
-                                    {getUserChip(assignee, handleDeleteAssignee, handleChangeAssigne)}
-                                </Stack>
+                                <Link href={"/projects/projects/" + task.project.id} style={{ textDecoration: 'none' }}>
+                                    <Typography variant="h6" component="div">{task.project.name}</Typography>
+                                </Link>
+                                {getUserChip(assignee, handleDeleteAssignee, handleChangeAssigne, props.showEditButton)}
+
 
                             </Stack>
 
@@ -141,52 +143,37 @@ export default function TaskDetail(props: any) {
                                 <TextField
                                     id="deadline"
                                     label="Deadline"
-                                    defaultValue={props.deadline}
+                                    defaultValue={new Date(task.deadline).toLocaleDateString()}
                                     InputProps={{
-                                        readOnly: editMode ? false : true,
-                                        disableUnderline: editMode ? false : true
+                                        readOnly: disabled,
+                                        disableUnderline: disabled
                                     }}
-                                    variant="outlined"
-                                    sx={{
-                                        "& fieldset": { border: editMode ? 1 : 'none' },
-                                    }}
+                                    variant="standard"
                                 />
-                                <TextField
-                                    id="state"
-                                    label="State"
-                                    defaultValue={props.state.name}
-                                    InputProps={{
-                                        readOnly: editMode ? false : true,
-                                        disableUnderline: editMode ? false : true,
-                                    }}
-                                    variant="outlined"
-                                    sx={{
-                                        "& fieldset": { border: editMode ? 1 : 'none' },
-                                    }}
-                                />
+                                <Stack width="100%" direction={'row'} spacing={2} alignItems={'center'} justifyContent={'space-between'}>
+                                    <Typography>State</Typography>
+                                    {getLabels(task.state, handleAddLabels, handleRemoveLabels, props.showEditButton)}
+                                </Stack>
                             </Stack>
-                            <Grid container spacing={{ md: 1, xs: 0 }} columns={{ xs: 4, sm: 4, md: 10 }}>
-                                {Array.from(labels).map((value, index) => (
-                                    <Grid item xs={2} sm={2} md={2} key={index}>
-                                        {getLabels(value, handleAddLabels, handleRemoveLabels)}
-                                    </Grid>
+                            <Stack direction={"row"} spacing={1} useFlexGap flexWrap="wrap">
+                                {Array.from(labels).map((value: any) => (
+                                    getLabels(value, handleAddLabels, handleRemoveLabels, props.showEditButton)
                                 ))}
-                            </Grid>
+                            </Stack>
                         </Stack>
                     </Grid>
                     {props.showEditButton ?
                         <Grid item xl={1}>
                             <Box display="flex" justifyContent="center">
                                 {
-                                    editMode ?
-                                        <IconButton aria-label="delete" onClick={handleSave}>
-                                            <SaveIcon color="primary" />
-                                        </IconButton> :
+                                    disabled ?
                                         <IconButton aria-label="delete" onClick={() => {
-                                            console.log("edit mode");
-                                            setEditMode(true)
+                                            setDisabled(false)
                                         }}>
                                             <EditIcon color="primary" />
+                                        </IconButton> :
+                                        <IconButton aria-label="delete" onClick={handleSave}>
+                                            <SaveIcon color="primary" />
                                         </IconButton>
                                 }
                             </Box>
@@ -200,7 +187,20 @@ export default function TaskDetail(props: any) {
                         <Divider variant="middle" />
                         <Box px={{ xl: 2, xs: 3 }}
                             py={{ xl: 2, xs: 2 }}>
-                            <Typography>{props.description}</Typography>
+                                <TextField
+                                    id="description"
+                                    defaultValue={task.description}
+                                    InputProps={{
+                                        readOnly: disabled,
+                                        
+                                    }}
+                                    fullWidth
+                                    multiline
+                                    variant="outlined"
+                                    sx={{
+                                        "& fieldset": { border: disabled ? 'none' : "1 px" },
+                                      }}
+                                />
                         </Box>
                     </React.Fragment> : <React.Fragment></React.Fragment>
             }
