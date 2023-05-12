@@ -1,32 +1,105 @@
 import LabelData from '@/components/customs/LabelData';
 import Stats from '@/components/projects/Stats';
-import { Grid, Paper } from '@mui/material';
+import { Avatar, Dialog, DialogTitle, Grid, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper } from '@mui/material';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import ProjectDetail from '@/components/projects/ProjectDetail';
-import { json } from 'stream/consumers';
-
-const data = {
-    name: "Tootbrush Tootbrush Tootbrush ",
-    tasks: 12,
-    manager: "Manager",
-    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Mauris dolor felis, sagittis at, luctus sed, aliquam non, tellus. Etiam commodo dui eget wisi. Curabitur bibendum justo non orci. Integer lacinia. Etiam ligula pede, sagittis quis, interdum ultricies, scelerisque eu. Nulla pulvinar eleifend sem. Curabitur sagittis hendrerit ante. Nullam sit amet magna in magna gravida vehicula. Morbi scelerisque luctus velit. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. Cras elementum. Etiam sapien elit, consequat eget, tristique non, venenatis quis, ante.",
-    start: "2.2.2023",
-    deadline: "2.2.2024",
-    state: "Open",
-    category: "Hiring"
-}
+import { blue } from '@mui/material/colors';
 
 function DetailPage(props: any) {
+    const [stateOpen, setStateOpen] = useState(false);
+    const [typeOpen, setTypeOpen] = useState(false);
+    const [projectStates, setProjectStates] = useState();
+    const [projectTypes, setProjectTypes] = useState();
     const [project, setProject] = useState();
     const router = useRouter();
-    
+
     console.log("Project")
     useEffect(() => {
         fetchProject();
+        fetchProjectStates();
+        fetchProjectTypes();
     }, [router])
 
+    const handleStateClose = async (value: any) => {
+        setStateOpen(false);
+        console.log(value);
+        if (value === undefined) {
+            return;
+        }
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + project.id + "/set-state/" + value.id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
 
+        if (res.ok) {
+            setProject({ ...project, projectState: value });
+        }
+    };
+
+    const handleTypeClose = async (value: any) => {
+        setTypeOpen(false);
+        console.log(value);
+        if (value === undefined) {
+            return;
+        }
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + project.id + "/set-type/" + value.id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            setProject({ ...project, projectType: value });
+        }
+    };
+
+    async function fetchProjectStates() {
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-state/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setProjectStates(json)
+            console.log(json)
+        }
+    }
+
+    async function fetchProjectTypes() {
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-type/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setProjectTypes(json)
+            console.log(json)
+        }
+    }
     async function fetchProject() {
         if (router.query.projectId === undefined) {
             return;
@@ -45,46 +118,67 @@ function DetailPage(props: any) {
         }
     }
 
+    async function editProject(project: any) {
+        console.log(project)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(project)
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            setProject(json)
+        }
+    }
+
+    const deleteData = async (id: any, type: string) => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel-type/` + id, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            router.push('/projects/projects')
+        }
+    }
+    
+    const handleStateClickOpen = () => {
+        setStateOpen(true);
+    };
+
+    const handleCategoryClickOpen = () => {
+        setTypeOpen(true);
+    };
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xl={12} xs={12}>
-                {project === undefined ? <React.Fragment></React.Fragment>: <ProjectDetail
+                {project === undefined ? <React.Fragment></React.Fragment> : <ProjectDetail
                     project={project}
+                    editProject={editProject}
+                    setState={handleStateClickOpen}
+                    setCategory={handleCategoryClickOpen}
                     showDescription={true}
                     showEditButton={true} />}
-            </Grid>
-            {/*<Grid item xl={1}>
-                <Stack
-                    direction={{ xs: 'column', xl: 'column' }}
-                    spacing={2}
-                    alignItems="stretch"
-                    height="100%">
-                <CustomButton>Tasks</CustomButton>
-                <CustomButton>Events</CustomButton>
-                <CustomButton>Channels</CustomButton>
-
-                </Stack>
-            </Grid> */}
-            {/* <Grid item xl={4}>
-                <Paper sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                }}>
-                    <TaskPaper projectId={router.query.projectId} />
-                </Paper>
+                {projectStates ?
+                    <SimpleDialog
+                        open={stateOpen}
+                        onClose={handleStateClose}
+                        choices={projectStates} /> : <React.Fragment />}
+                {projectTypes ?
+                    <SimpleDialog
+                        open={typeOpen}
+                        onClose={handleTypeClose}
+                        choices={projectTypes} /> : <React.Fragment />}
 
             </Grid>
-            <Grid item xl={4}>
-                <Paper sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                }}>
-                    <EventsPaper projectId={router.query.projectId} />
-                </Paper>
-
-            </Grid> */}
             <Grid item xl={3}>
                 <Paper sx={{
                     p: 2,
@@ -113,6 +207,38 @@ function DetailPage(props: any) {
                 </Paper>
             </Grid>
         </Grid>);
+}
+
+function SimpleDialog(props: any) {
+    const { onClose, selectedValue, open, choices } = props;
+
+    const handleClose = () => {
+        console.log("close")
+        onClose(undefined);
+    };
+
+    const handleListItemClick = (value: any) => {
+        console.log("item click")
+        onClose(value);
+        //onClose(value);
+    };
+    console.log(choices);
+    return (
+        <Dialog onClose={handleClose} open={open}>
+            <DialogTitle>Set backup account</DialogTitle>
+            <List sx={{ pt: 0 }}>
+                {choices.map((choice) => (
+                    <ListItem key={choice.id} disableGutters>
+                        <ListItemButton onClick={() => handleListItemClick(choice)} key={choice.id}>
+                            <ListItemAvatar>
+                            </ListItemAvatar>
+                            <ListItemText primary={choice.name} />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
+        </Dialog>
+    );
 }
 
 export default DetailPage;

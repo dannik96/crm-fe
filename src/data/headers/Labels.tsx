@@ -1,7 +1,5 @@
-import PostTableRow from "@/components/channels/posts/PostTableRow";
-import EventTableRow from "@/components/events/EventTableRow";
-import { FilterType, Responsive, SelectableRows } from "mui-datatables";
-
+import DeleteIcon from '@mui/icons-material/Delete';
+import { IconButton } from "@mui/material";
 export function labelTableColumns(updateData: Function, deleteData: Function, type : string) {
     return [{
         name: "id",
@@ -23,13 +21,11 @@ export function labelTableColumns(updateData: Function, deleteData: Function, ty
             empty: true,
             customBodyRender: (value: any, tableMeta: any, updateValue: any) => {
                 return (
-                    <button
-                        onClick={(e) => {
-                            deleteData(tableMeta.rowData[0], type);
-                        }}
-                    >
-                        Delete
-                    </button>
+                    <IconButton aria-label="edit" onClick={(e) => {
+                        deleteData(tableMeta.rowData[0], type);
+                    }}>
+                        <DeleteIcon color="primary" />
+                    </IconButton>
                 );
             }
         }

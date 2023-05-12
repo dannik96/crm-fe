@@ -26,6 +26,7 @@
     "react": "18.2.0",
     "react-big-calendar": "^1.6.9",
     "react-calendar": "^4.2.1",
+    "react-datepicker": "^4.11.0",
     "react-dom": "18.2.0",
     "react-sticky-box": "^2.0.4",
     "react-virtuoso": "^4.2.1",
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "@types/mui-datatables": "^4.3.4",
-    "@types/react-big-calendar": "^1.6.3"
+    "@types/react-big-calendar": "^1.6.3",
+    "@types/react-datepicker": "^4.11.2"
   }
 }

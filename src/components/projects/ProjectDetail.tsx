@@ -1,18 +1,19 @@
 import { Paper, Box, Grid, Stack, Divider, Typography, TextField, Chip, IconButton, Avatar } from "@mui/material";
 import LabelData from "../customs/LabelData";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { Padding } from "@mui/icons-material";
+import DatePicker from "react-datepicker";
 
-function getLabels(label: any, addHandler: Function, removeHandler: Function, showEditButton: boolean) {
+
+import "react-datepicker/dist/react-datepicker.css";
+
+function getLabels(label: any, changeHandler: Function, showEditButton: boolean) {
     const handleClick = () => {
-        removeHandler(label.id)
+        changeHandler()
     };
 
-    const handleDelete = () => {
-        removeHandler(label.id)
-    };
     return (
         <Chip
             label={label.name}
@@ -50,25 +51,26 @@ function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Fun
 }
 
 export default function ProjectDetail(props: any) {
-    const [disabled, setDisabled] = useState(true);
-
     const project = props.project;
-    console.log("render project detail")
-    console.log(project);
 
-    const handleAddLabels = (id: any) => {
-        console.log(id);
-    }
+    const [disabled, setDisabled] = useState(true);
+    const [startDate, setStartDate] = useState(new Date(project.start));
+    const [deadline, setDeadline] = useState(new Date(project.deadline));
 
 
-    const handleSave = (props: any) => {
+    const nameRef = useRef();
+    const descRef = useRef();
+
+    const handleSave = () => {
         setDisabled(true);
-        console.log(props);
+        const copy = project;
+        project.name = nameRef.current.value;
+        project.description = descRef.current.value;
+        project.start = startDate;
+        project.deadline = deadline;
+        props.editProject(project);
     }
 
-    const handleRemoveLabels = (id: any) => {
-        //props.updateLabels(labels);
-    }
     const handleDeleteAssignee = (props: any) => {
         console.log("delete");
         console.log(props);
@@ -103,6 +105,7 @@ export default function ProjectDetail(props: any) {
                                 id="name"
                                 defaultValue={project.name}
                                 multiline
+                                inputRef={nameRef}
                                 InputProps={{
                                     readOnly: disabled,
                                     disableUnderline: disabled,
@@ -126,26 +129,36 @@ export default function ProjectDetail(props: any) {
                             justifyContent="space-evenly"
                             minWidth={150}
                             spacing={1}>
-                            <TextField
-                                id="standard-read-only-input"
-                                label="From"
-                                InputProps={{
-                                    readOnly: disabled,
-                                    disableUnderline: disabled
-                                }}
-                                variant="standard"
-                                defaultValue={new Date(project.start).toLocaleDateString("cs-CS")}
-                            />
-                            <TextField
-                                id="standard-read-only-input"
-                                label="To"
-                                InputProps={{
-                                    readOnly: disabled,
-                                    disableUnderline: disabled
-                                }}
-                                variant="standard"
-                                defaultValue={new Date(project.deadline).toLocaleDateString("cs-CS")}
-                            />
+                            <Stack direction={'row'}
+                                alignItems="center"
+                                justifyContent="space-between"
+                                spacing={1}>
+                                <Typography variant="body1">
+                                    From:
+                                </Typography>
+                                <DatePicker
+                                    selected={startDate}
+                                    onChange={(date: Date) => setStartDate(date)}
+                                    id="start-date"
+                                    disabled={disabled}
+                                    dateFormat={"dd.MM.yyyy"}
+                                />
+                            </Stack>
+                            <Stack direction={'row'}
+                                alignItems="center"
+                                justifyContent="space-between"
+                                spacing={1}>
+                                <Typography variant="body1">
+                                    To:
+                                </Typography>
+                                <DatePicker
+                                    selected={deadline}
+                                    onChange={(date: Date) => setDeadline(date)}
+                                    id="end-date"
+                                    disabled={disabled}
+                                    dateFormat={"dd.MM.yyyy"}
+                                />
+                            </Stack>
                         </Stack>
                         <Stack
                             direction="column"
@@ -155,11 +168,11 @@ export default function ProjectDetail(props: any) {
                             spacing={2}>
                             <Stack width="100%" direction={'row'} spacing={2} alignItems={'center'} justifyContent={'space-between'}>
                                 <Typography>State</Typography>
-                                {getLabels(project.projectState, handleAddLabels, handleRemoveLabels, props.showEditButton)}
+                                {getLabels(project.projectState, props.setState, props.showEditButton)}
                             </Stack>
                             <Stack width="100%" direction={'row'} spacing={2} alignItems={'center'} justifyContent={'space-between'}>
                                 <Typography>Category</Typography>
-                                {getLabels(project.projectType, handleAddLabels, handleRemoveLabels, props.showEditButton)}
+                                {getLabels(project.projectType, props.setCategory, props.showEditButton)}
                             </Stack>
 
                         </Stack>
@@ -191,7 +204,22 @@ export default function ProjectDetail(props: any) {
                 <React.Fragment>
                     <Divider variant="middle" />
                     <Box sx={{ my: 3, mx: 2, mb: 1, p: 2 }}>
-                        <Typography>{project.description}</Typography>
+                        <TextField
+                            id="description"
+                            defaultValue={project.description}
+                            inputRef={descRef}
+                            InputProps={{
+                                readOnly: disabled,
+                            }}
+                            variant="outlined"
+                            sx={{
+                                "& fieldset": { border: !disabled ? 1 : 'none' },
+                                padding: 0,
+                                marginBottom: 1
+                            }}
+                            multiline
+                            fullWidth
+                        />
                     </Box>
                 </React.Fragment> : <React.Fragment></React.Fragment>
         }

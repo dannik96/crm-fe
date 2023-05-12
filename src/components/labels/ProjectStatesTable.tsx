@@ -49,10 +49,20 @@ export default function ProjectStatesTable (props: any) {
         setPostStates(postStates);
     }
 
-    const deleteData = (params: any, type: string) => {
-        console.log(params)
-        console.log(postStates.filter(postState => postState.id !== params));
-        setPostStates(postStates.filter(postState => postState.id !== params));
+    const deleteData = async (id: any, type: string) => {
+        console.log("delete" + id)
+        console.log(postStates.filter(postState => postState.id !== id));
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-state/` + id, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            setPostStates(postStates.filter(postState => postState.id !== id));
+        }
     }
 
     const LabelTableOptions = {
