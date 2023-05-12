@@ -20,6 +20,9 @@ function DetailPage() {
     }, [router])
 
     async function fetchTasks() {
+        if (router.query.projectId === undefined) {
+            return;
+        }
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId + "/tasks", {
             headers: {
                 "Content-Type": "application/json",
@@ -61,7 +64,7 @@ function DetailPage() {
                 name: tasks[i].name,
                 deadline: tasks[i].deadline ? new Date(tasks[i].deadline).toLocaleDateString("cs-CS") : "", 
                 assignee: tasks[i].assignedPerson ? tasks[i].assignedPerson.name + " " + tasks[i].assignedPerson.surname : "",
-                state: tasks[i].state.name
+                state: tasks[i].taskState ? tasks[i].taskState.name : ""
             })
         }
         console.log(modifiedList);
