@@ -1,78 +1,51 @@
+import SimpleDialog from "@/components/customs/SimpleDialog";
 import CustomTable from "@/components/customs/CustomTable";
+import LabelDialog from "@/components/customs/LabelDialog";
 import TabPanel from "@/components/customs/TabPanel";
 import TaskComment from "@/components/projects/tasks/TaskComment";
 import TaskDetail from "@/components/projects/tasks/TaskDetail";
 import { TaskParticipantsColumns } from "@/data/headers/TaskParticipants";
 import { TaskPostsColumns } from "@/data/headers/TaskPosts";
 import { TaskSpentsColumns } from "@/data/headers/TaskSpents";
-import { Box, Button, Divider, FormControl, FormGroup, Grid, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Box, Button, Checkbox, Dialog, DialogTitle, Divider, FormControl, FormControlLabel, FormGroup, Grid, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 
-const data = {
-    name: "Task name",
-    assignee: { id: 1, name: "User user" },
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies. Pellentesque vehicula placerat mollis. Aenean id blandit urna, ut lobortis metus. Sed id tincidunt velit. Nulla facilisi. Fusce sapien nisi, sodales ac elit a, aliquet pulvinar nisi. Mauris venenatis magna eget magna pharetra consectetur. Praesent et arcu nisi. Nullam fermentum lectus a dictum fermentum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Praesent condimentum arcu ut fringilla placerat. Vivamus porttitor ligula vel viverra iaculis. Nulla a scelerisque justo. In ut sem quis ligula bibendum euismod. Duis quis mattis elit. Aliquam consectetur tortor euismod nisl posuere vulputate. Nullam tempus ornare laoreet. Nullam viverra quam eget ultricies tempus. Etiam fringilla sollicitudin libero, eget dictum nisl mattis sit amet. Fusce fermentum tortor neque, ut imperdiet diam imperdiet vitae. Phasellus a maximus felis. Etiam ultrices, lacus id luctus eleifend, augue sapien pretium sapien, vitae facilisis mauris ipsum auctor felis. Phasellus eget dictum sem. Nulla nec augue libero.",
-    deadline: "26.5.2023",
-    priority: 1,
-    label: [{ id: 1, name: "Labelname1", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-    { id: 2, name: "Labelname1", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-    { id: 3, name: "Labelname1", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-    { id: 4, name: "Labelname1", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-    { id: 5, name: "Labelname1", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." }],
-    state: { name: "State name", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit." },
-    project: { id: 1, name: "Project name" },
-
-    spent:
-        [{ id: 1, date: "15.4.2023", time: 3600000, user: { id: 1, name: "User user" } },
-        { id: 2, date: "15.4.2023", time: 3600000, user: { id: 2, name: "Admin admin" } },
-        { id: 3, date: "15.4.2023", time: 3600000, user: { id: 3, name: "Task user" } },
-        { id: 4, date: "15.4.2023", time: 3600000, user: { id: 3, name: "Task user" } },
-        { id: 5, date: "15.4.2023", time: 3600000, user: { id: 3, name: "Task user" } },
-        { id: 6, date: "15.4.2023", time: 3600000, user: { id: 3, name: "Task user" } },
-        { id: 7, date: "15.4.2023", time: 3600000, user: { id: 3, name: "Task user" } },
-        { id: 8, date: "15.4.2023", time: 3600000, user: { id: 3, name: "Task user" } },
-        { id: 9, date: "15.4.2023", time: 3600000, user: { id: 3, name: "Task user" } },
-        { id: 10, date: "15.4.2023", time: 3600000, user: { id: 1, name: "User user" } },],
-    participants:
-        [{ id: 1, name: "User user" }, { id: 2, name: "Admin admin" }, { id: 3, name: "Task user" }, { id: 4, name: "Commenter commenter" }],
-    comments:
-        [{ id: 1, date: "2.2.2022", user: { id: 1, name: "User user" }, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 5, date: "2.2.2022", user: { id: 1, name: "User user" }, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 2, date: "2.2.2022", user: { id: 1, name: "User user" }, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 10, date: "2.2.2022", user: { id: 1, name: "User user" }, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 20, date: "2.2.2022", user: { id: 1, name: "User user" }, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 12, date: "2.2.2022", user: { id: 1, name: "User user" }, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },],
-    posts:
-        [{ id: 1, name: "Post 1", postDate: "2.2.2023", state: { name: "State 1", description: "Lorem ipsum dolor sit amet." }, content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 2, name: "Post 1", postDate: "2.2.2023", state: { name: "State 1", description: "Lorem ipsum dolor sit amet." }, content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 3, name: "Post 1", postDate: "2.2.2023", state: { name: "State 1", description: "Lorem ipsum dolor sit amet." }, content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 4, name: "Post 1", postDate: "2.2.2023", state: { name: "State 1", description: "Lorem ipsum dolor sit amet." }, content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },
-        { id: 5, name: "Post 1", postDate: "2.2.2023", state: { name: "State 1", description: "Lorem ipsum dolor sit amet." }, content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rhoncus lectus eu mi posuere, a ultrices lorem ultricies." },]
-}
 
 export default function TaskDetailPage(props: any) {
-    const commentRef = useRef();
+    const commentRef = useRef<any | any>();
     const [value, setValue] = useState(0);
     const [task, setTask] = useState();
     const [spentTime, setSpentTime] = useState([]);
+    const [persons, setPersons] = useState();
+    const [stateOpen, setStateOpen] = useState(false);
+    const [labelOpen, setLabelOpen] = useState(false);
+    const [taskStates, setTaskStates] = useState();
+    const [taskLabels, setTaskLabels] = useState();
+    const [managerOpen, setManagerOpen] = useState(false);
     const [posts, setPosts] = useState([]);
     const [participants, setParticipants] = useState([]);
-    const [comments, setComments] = useState();
+    const [comments, setComments] = useState([]);
     const router = useRouter();
-
+    
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
 
-    const setLabels = (labels: any) => {
-        console.log("set Labels")
-        data.label = labels;
-    }
+    useEffect(() => {
+        fetchTask();
+        fetchTaskSpents();
+        fetchPosts();
+        // TODO - need to add to DB and model
+        //fetchParticipants();
+        fetchPersons();
+        fetchComments();
+        fetchTaskStates();
+        fetchTaskLabels();
+    }, [router])
 
     const handleAddComment = async (props: any) => {
-        console.log(commentRef.current.value)
-        if (router.query.taskId === undefined || commentRef === undefined || commentRef.current === undefined 
+        if (router.query.taskId === undefined || commentRef === undefined || commentRef.current === undefined
             || commentRef.current.value === "") {
             return;
         }
@@ -87,26 +60,52 @@ export default function TaskDetailPage(props: any) {
                 "person": {
                     "id": 5
                 },
-                "task" : {
-                    "id" : router.query.taskId
+                "task": {
+                    "id": router.query.taskId
                 }
             })
         })
 
         if (res.ok) {
             const json = await res.json()
-            console.log(json)
+            setComments([...comments, json]);
         }
     }
 
-    useEffect(() => {
-        fetchTask();
-        fetchTaskSpents();
-        fetchPosts();
-        // TODO - need to add to DB and model
-        //fetchParticipants();
-        fetchComments();
-    }, [router])
+    async function fetchTaskStates() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task-state/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setTaskStates(json)
+        }
+    }
+
+    async function fetchTaskLabels() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task-label/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setTaskLabels(json)
+        }
+    }
+
     async function fetchComments() {
         if (router.query.taskId === undefined) {
             return;
@@ -123,6 +122,7 @@ export default function TaskDetailPage(props: any) {
             setComments(json)
         }
     }
+
     async function fetchPosts() {
         if (router.query.taskId === undefined) {
             return;
@@ -191,6 +191,125 @@ export default function TaskDetailPage(props: any) {
         }
     }
 
+    async function fetchPersons() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/person/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setPersons(json)
+        }
+    }
+
+    const handleManagerClose = async (value: any) => {
+        setManagerOpen(false);
+        if (router.query.taskId === undefined) {
+            return;
+        }
+
+        if (value === undefined) {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/unset-assignee/", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+
+            if (res.ok) {
+                setTask({ ...project, assignedPerson: value });
+            }
+            return;
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/set-assignee/" + value.id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            setTask({ ...task, assignedPerson: value });
+        }
+    };
+
+    const handleLabelsChange = async (value: any[]) => {
+        let addArr = [];
+        let delArr = [];
+        let res: any;
+        for (let i = 0; i < value.length; i++) {
+            if (!task.taskLabels.includes(value[i])) {
+                addArr.push(value[i]);
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/add-label/" + value[i].id, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+            }
+        }
+
+        for (let i = 0; i < task.taskLabels.length; i++) {
+            if (!value.includes(task.taskLabels[i])) {
+                delArr.push(task.taskLabels[i]);
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/remove-label/" + task.taskLabels[i].id, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+            }
+        }
+        if (res.ok) {
+            setTask({
+                ...task,
+                taskLabels: value
+            })
+        }
+        setLabelOpen(false);
+    };
+
+    const handleStateChange = async (value: any) => {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/set-state/" + value.id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            setTask({ ...task, taskState: value })
+        }
+        setStateOpen(false);
+    };
+
+    const handleManagerClickOpen = () => {
+        setManagerOpen(true);
+    };
+
+    const handleLabelClickOpen = () => {
+        setLabelOpen(true);
+    };
+
+    const handleStateClickOpen = () => {
+        setStateOpen(true);
+    };
+
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xl={12} xs={12}>
@@ -200,16 +319,30 @@ export default function TaskDetailPage(props: any) {
                             task={task}
                             showDescription={true}
                             showEditButton={true}
-                            name={data.name}
-                            assignee={data.assignee}
-                            label={data.label}
-                            state={data.state}
-                            description={data.description}
-                            deadline={data.deadline}
-                            priority={data.priority}
-                            project={data.project}
-                            updateLabels={setLabels} />
+                            setManager={handleManagerClickOpen}
+                            removeManager={handleManagerClose}
+                            updateLabels={handleLabelClickOpen}
+                            updateState={handleStateClickOpen} />
                         : <React.Fragment></React.Fragment>}
+                {persons ?
+                    <SimpleDialog
+                        open={managerOpen}
+                        onClose={() => setManagerOpen(false)}
+                        onItemClick={handleManagerClose}
+                        choices={persons} /> : <React.Fragment />}
+                {taskLabels && task ?
+                    <LabelDialog
+                        open={labelOpen}
+                        onClose={() => setLabelOpen(false)}
+                        onSave={(selectedValues: any) => handleLabelsChange(selectedValues)}
+                        selectedValue={task.taskLabels}
+                        choices={taskLabels} /> : <React.Fragment />}
+                {taskStates && task ?
+                    <SimpleDialog
+                        open={stateOpen}
+                        onClose={() => setStateOpen(false)}
+                        onItemClick={handleStateChange}
+                        choices={taskStates} /> : <React.Fragment />}
             </Grid>
             <Grid item xl={4}>
                 <Paper style={{ height: 500, width: '100%' }}>
@@ -238,7 +371,7 @@ export default function TaskDetailPage(props: any) {
                     </TabPanel>
                     <TabPanel value={value} index={2}>
                         <Box height={460} padding={2}>
-                            <CustomTable columns={TaskParticipantsColumns} rows={data.participants} />
+                            <CustomTable columns={TaskParticipantsColumns} rows={[]} />
                         </Box>
                     </TabPanel>
                 </Paper>

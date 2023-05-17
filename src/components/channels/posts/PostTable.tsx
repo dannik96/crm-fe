@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import MUIDataTable from "mui-datatables";
 import PostTableRow from "./PostTableRow";
 
-const ExpandableRowTable = (props: any) => {
-
+const PostTable = (props: any) => {
     return (
         <MUIDataTable
             title={props.header ? props.header : ""}
@@ -16,4 +15,4 @@ const ExpandableRowTable = (props: any) => {
     );
 };
 
-export default ExpandableRowTable;
+export default PostTable;

@@ -29,23 +29,3 @@ export const PostTableColumns = [
         }
     }
 ];
-
-export const PostTableOptions = {
-    filter: true,
-    onFilterChange: (changedColumn: any, filterList: any) => {
-        console.log(changedColumn, filterList);
-    },
-    selectableRows: "none",
-    filterType: "dropdown",
-    responsive: "simple",
-    expandableRows: true,
-    tableId: "Posts",
-    pagination: false,
-    elevation: 0,
-    renderExpandableRow: (rowData: any, rowMeta: any) => {
-        console.log(rowData, rowMeta);
-        return (
-            <PostTableRow rowData={rowData} />
-        );
-    }
-};

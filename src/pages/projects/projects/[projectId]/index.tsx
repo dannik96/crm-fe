@@ -9,8 +9,10 @@ import { blue } from '@mui/material/colors';
 function DetailPage(props: any) {
     const [stateOpen, setStateOpen] = useState(false);
     const [typeOpen, setTypeOpen] = useState(false);
+    const [managerOpen, setManagerOpen] = useState(false);
     const [projectStates, setProjectStates] = useState();
     const [projectTypes, setProjectTypes] = useState();
+    const [persons, setPersons] = useState();
     const [project, setProject] = useState();
     const router = useRouter();
 
@@ -19,6 +21,7 @@ function DetailPage(props: any) {
         fetchProject();
         fetchProjectStates();
         fetchProjectTypes();
+        fetchPersons();
     }, [router])
 
     const handleStateClose = async (value: any) => {
@@ -64,7 +67,40 @@ function DetailPage(props: any) {
             setProject({ ...project, projectType: value });
         }
     };
+    const handleManagerClose = async (value: any) => {
+        setManagerOpen(false);
+        console.log(value);
+        if (router.query.projectId === undefined) {
+            return;
+        }
 
+        if (value === undefined) {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + project.id + "/unset-manager/", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+
+            if (res.ok) {
+                setProject({ ...project, manager: value });
+            }
+            return;
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + project.id + "/set-manager/" + value.id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            setProject({ ...project, manager: value });
+        }
+    };
     async function fetchProjectStates() {
         if (router.query.projectId === undefined) {
             return;
@@ -100,6 +136,25 @@ function DetailPage(props: any) {
             console.log(json)
         }
     }
+
+    async function fetchPersons() {
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/person/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setPersons(json)
+            console.log(json)
+        }
+    }
+
     async function fetchProject() {
         if (router.query.projectId === undefined) {
             return;
@@ -149,13 +204,18 @@ function DetailPage(props: any) {
             router.push('/projects/projects')
         }
     }
-    
+
     const handleStateClickOpen = () => {
         setStateOpen(true);
     };
 
     const handleCategoryClickOpen = () => {
         setTypeOpen(true);
+    };
+
+
+    const handleManagerClickOpen = () => {
+        setManagerOpen(true);
     };
     return (
         <Grid container padding={4} spacing={3}>
@@ -165,19 +225,28 @@ function DetailPage(props: any) {
                     editProject={editProject}
                     setState={handleStateClickOpen}
                     setCategory={handleCategoryClickOpen}
+                    setManager={handleManagerClickOpen}
+                    removeManager={handleManagerClose}
                     showDescription={true}
                     showEditButton={true} />}
                 {projectStates ?
                     <SimpleDialog
                         open={stateOpen}
-                        onClose={handleStateClose}
+                        onClose={() => setStateOpen(false)}
+                        onItemClick={handleStateClose}
                         choices={projectStates} /> : <React.Fragment />}
                 {projectTypes ?
                     <SimpleDialog
                         open={typeOpen}
-                        onClose={handleTypeClose}
+                        onClose={() => setTypeOpen(false)}
+                        onItemClick={handleTypeClose}
                         choices={projectTypes} /> : <React.Fragment />}
-
+                {persons ?
+                    <SimpleDialog
+                        open={managerOpen}
+                        onClose={() => setManagerOpen(false)}
+                        onItemClick={handleManagerClose}
+                        choices={persons} /> : <React.Fragment />}
             </Grid>
             <Grid item xl={3}>
                 <Paper sx={{
@@ -210,21 +279,16 @@ function DetailPage(props: any) {
 }
 
 function SimpleDialog(props: any) {
-    const { onClose, selectedValue, open, choices } = props;
-
-    const handleClose = () => {
-        console.log("close")
-        onClose(undefined);
-    };
+    const { onClose, onItemClick, selectedValue, open, choices } = props;
 
     const handleListItemClick = (value: any) => {
         console.log("item click")
-        onClose(value);
+        onItemClick(value);
         //onClose(value);
     };
     console.log(choices);
     return (
-        <Dialog onClose={handleClose} open={open}>
+        <Dialog onClose={onClose} open={open}>
             <DialogTitle>Set backup account</DialogTitle>
             <List sx={{ pt: 0 }}>
                 {choices.map((choice) => (
@@ -232,7 +296,7 @@ function SimpleDialog(props: any) {
                         <ListItemButton onClick={() => handleListItemClick(choice)} key={choice.id}>
                             <ListItemAvatar>
                             </ListItemAvatar>
-                            <ListItemText primary={choice.name} />
+                            <ListItemText primary={choice.surname ? choice.name + " " + choice.surname : choice.name} />
                         </ListItemButton>
                     </ListItem>
                 ))}

@@ -1,25 +1,49 @@
 import { TableRow, TableCell, Grid, Stack, TextField, Box, IconButton, Divider, Typography, Chip, MenuItem, Select, SelectChangeEvent, InputLabel, FormControl } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import React from "react";
+import SimpleDialog from "@/components/customs/SimpleDialog";
+import LabelDialog from "@/components/customs/LabelDialog";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-function getLabels(label: any, addHandler: Function, removeHandler: Function) {
+
+function getLabels(label: any, addHandler: Function, editable: boolean) {
     const handleClick = () => {
-        removeHandler(label.id)
+        if (editable)
+            addHandler()
     };
 
-    const handleDelete = () => {
-        removeHandler(label.id)
-    };
     return (
         <Chip
+            key={label.id}
             label={label.name}
             onClick={handleClick}
-            onDelete={handleDelete}
-            id={label}
-            key={label.id}
+            id={label.id}
+            color="primary"
+            clickable={editable}
+            variant={editable ? "filled" : "outlined"}
+            style={{ minWidth: 100 }}
         />);
+}
+
+function getStateChip(state: any, changeState: Function, editMode: boolean) {
+
+    const handleClick = () => {
+        changeState()
+    }
+
+    return (
+        <Chip
+            style={{ minWidth: 100 }}
+            id={state ? state.id : -1}
+            label={state? state.name : ""}
+            variant={editMode ? "filled" : "outlined"}
+            color="primary"
+            clickable={editMode}
+            onClick={handleClick} />
+    )
 }
 
 export default function PostTableRow(props: any) {
@@ -27,7 +51,11 @@ export default function PostTableRow(props: any) {
     const [post, setPost] = useState(undefined);
     const [postStates, setPostStates] = useState([]);
     const [editMode, setEditMode] = useState(false);
-
+    const [taskOpen, setTaskOpen] = useState(false);
+    const [postStateOpen, setPostStateOpen] = useState(false);
+    const nameRef = useRef();
+    const contRef = useRef();
+    console.log(post)
     useEffect(() => {
         fetchPost();
         fetchPostStates();
@@ -63,13 +91,41 @@ export default function PostTableRow(props: any) {
         }
     }
 
-    const handleChange = (event: SelectChangeEvent) => {
-        //setState(event.target.value);
-    };
+    const handlePostStateChange = async (value: any) => {
+        setPostStateOpen(false);
 
-    const handleSave = (props: any) => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post/` + post.id + "/set-state/" + value.id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const newPost = { ...post, postState: value }
+            setPost(newPost);
+        }
+    }
+
+    const handleSave = async (params: any) => {
         setEditMode(false);
-        console.log(props)
+        post.content = contRef.current.value;
+        post.name = nameRef.current.value;
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(post)
+        })
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            props.updateHandler(json);
+        }
     }
 
     // TODO
@@ -77,24 +133,20 @@ export default function PostTableRow(props: any) {
 
         console.log(id);
     }
-    const handleRemoveLabels = (id: any) => {
-        //props.updateLabels(labels);
-        // setLabels(labels.filter((label: { id: any; }) =>
-        //     label.id !== id
-        // ))
+    const handleUpdateState = (id: any) => {
+        if (editMode)
+            setPostStateOpen(true);
     }
 
     // TODO
     const handleAddTask = (id: any) => {
+        setTaskOpen(true);
+    }
 
-        console.log(id);
+    let isClearable = {
+        isClearable : editMode
     }
-    const handleRemoveTask = (id: any) => {
-        //props.updateLabels(labels);
-        // setTasks(tasks.filter((task: { id: any; }) =>
-        //     task.id !== id
-        // ))
-    }
+
     return (
         <TableRow>
             {post ?
@@ -115,45 +167,35 @@ export default function PostTableRow(props: any) {
                                         "& fieldset": { border: editMode ? 1 : 'none' },
                                         maxWidth: 250
                                     }}
+                                    inputRef={nameRef}
                                 />
-                                <TextField
-                                    id="postDate"
-                                    label="Posting date"
-                                    defaultValue={new Date(post.postDate).toLocaleDateString()}
-                                    InputProps={{
-                                        disabled: editMode ? false : true,
-                                        disableUnderline: editMode ? false : true
-                                    }}
-                                    variant="standard"
-                                    sx={{
-                                        "& fieldset": { border: editMode ? 1 : 'none' },
-                                        maxWidth: 250,
-                                    }}
-
-                                />
-
-                                <FormControl variant="standard" sx={{ minWidth: 80 }}>
-                                    <InputLabel id="state-label">State</InputLabel>
-                                    <Select
-                                        labelId="state-label"
-                                        id="state"
-                                        value={post.postState.name}
-                                        label="State"
-                                        onChange={handleChange}
-                                        disableUnderline={editMode ? false : true}
-                                        sx={{
-                                            "& fieldset": { border: editMode ? 1 : 'none' },
-                                            maxWidth: 250,
-                                        }}
+                                <Stack direction={'row'}
+                                    alignItems="center"
+                                    spacing={1}>
+                                    <Typography variant="body1">
+                                        Post date:
+                                    </Typography>
+                                    <DatePicker
+                                        selected={new Date(post.postDate)}
+                                        onChange={(date: Date) => setPost({ ...post, postDate: date })}
+                                        id="end-date"
                                         disabled={!editMode}
-                                    >
-                                        {Array.from(postStates).map(postState => {
-                                            console.log(postState)
-                                            return <MenuItem key={postState.id} value={postState.name}>{postState.name}</MenuItem>
-                                        }
-                                        )}
-                                    </Select>
-                                </FormControl>
+                                        showTimeSelect
+                                        {...isClearable}
+                                        dateFormat={"dd.MM.yyyy"}
+                                    />
+                                </Stack>
+
+                                <Stack direction={'row'} spacing={2} mt={2} alignItems={'center'}>
+                                    <Typography>State: </Typography>
+                                    {getStateChip(post.postState, handleUpdateState, editMode)}
+                                    {postStates ?
+                                        <SimpleDialog
+                                            open={postStateOpen}
+                                            onClose={() => setPostStateOpen(false)}
+                                            onItemClick={handlePostStateChange}
+                                            choices={postStates} /> : <React.Fragment />}
+                                </Stack>
                                 <TextField
                                     id="postDate"
                                     label="Author"
@@ -171,7 +213,7 @@ export default function PostTableRow(props: any) {
                                 <Stack direction={'row'} spacing={2} mt={2} alignItems={'center'}>
                                     <Typography variant="body1">Tasks: </Typography>
                                     {Array.from(post.tasks).map((value, index) => (
-                                        getLabels(value, handleAddTask, handleRemoveTask)
+                                        getLabels(value, handleAddTask, editMode)
                                     ))}
                                 </Stack>
 
@@ -196,9 +238,22 @@ export default function PostTableRow(props: any) {
                     </Grid>
                     <Divider variant="middle" />
                     <Box py={2} px={3}>
-                        <Typography variant="body1">
-                            {post.content}
-                        </Typography>
+                    <TextField
+                            id="description"
+                            defaultValue={post.content}
+                            inputRef={contRef}
+                            InputProps={{
+                                readOnly: !editMode,
+                            }}
+                            variant="outlined"
+                            sx={{
+                                "& fieldset": { border: editMode ? 1 : 'none' },
+                                padding: 0,
+                                marginBottom: 1
+                            }}
+                            multiline
+                            fullWidth
+                        />
                     </Box>
                 </TableCell> : <React.Fragment />
             }

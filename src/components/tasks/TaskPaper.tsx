@@ -62,7 +62,7 @@ export default function TaskPaper(props: any) {
 
                                 <Typography variant="body1">State</Typography>
                                 <Chip
-                                    label={task.state.name}
+                                    label={task.taskState.name}
                                     variant="outlined"
                                     color="primary"
                                 />

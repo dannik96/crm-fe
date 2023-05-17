@@ -1,5 +1,6 @@
 import ChannelDetail from "@/components/channels/ChannelDetail";
 import CustomTable from "@/components/customs/CustomTable";
+import LabelDialog from "@/components/customs/LabelDialog";
 import TabPanel from "@/components/customs/TabPanel";
 import { AudiencesColumns } from "@/data/headers/Audiences";
 import { ProjectsColumns } from "@/data/headers/Projects";
@@ -47,13 +48,19 @@ const data = {
 
 export default function Channel(props: any) {
     const [channel, setChannel] = useState(undefined);
+    const [channelTypes, setChannelTypes] = useState(undefined);
+    const [channelTypesOpen, setChannelTypesOpen] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
         fetchChannel();
+        fetchChannelTypes();
     }, [router])
 
     async function fetchChannel() {
+        if (!router.query.channelId) {
+            return;
+        }
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + router.query.channelId, {
             headers: {
                 "Content-Type": "application/json",
@@ -68,9 +75,82 @@ export default function Channel(props: any) {
         }
     }
 
-    const setTypes = (types: any) => {
-        console.log("set Labels")
-        data.types = types;
+    async function fetchChannelTypes() {
+        if (router.query.channelId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel-type/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setChannelTypes(json)
+        }
+    }
+
+    async function editChannel(params: any) {
+        if (router.query.channelId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(params)
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setChannel(json)
+        }
+    }
+
+    const handleChannelTypesChange = async (value: any[]) => {
+        let addArr = [];
+        let delArr = [];
+        let res: any;
+        for (let i = 0; i < value.length; i++) {
+            if (!channel.channelTypes.includes(value[i])) {
+                addArr.push(value[i]);
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + channel.id + "/add-type/" + value[i].id, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+            }
+        }
+
+        for (let i = 0; i < channel.channelTypes.length; i++) {
+            if (!value.includes(channel.channelTypes[i])) {
+                delArr.push(channel.channelTypes[i]);
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + channel.id + "/remove-type/" + channel.channelTypes[i].id, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+            }
+        }
+        if (res.ok) {
+            setChannel({
+                ...channel,
+                channelTypes: value
+            })
+        }
+        setChannelTypesOpen(false);
+    };
+
+    const handleTypesClickOpen = (types: any) => {
+        setChannelTypesOpen(true)
     }
 
     return (
@@ -81,9 +161,17 @@ export default function Channel(props: any) {
                         channel={channel}
                         showDescription={true}
                         showEditButton={true}
-                        updateTypes={setTypes} />
+                        editChannel={editChannel}
+                        updateTypes={handleTypesClickOpen} />
                 </Grid>
                 : <React.Fragment />}
+            {channel && channelTypes ?
+                <LabelDialog
+                    open={channelTypesOpen}
+                    onClose={() => setChannelTypesOpen(false)}
+                    onSave={(selectedValues: any) => handleChannelTypesChange(selectedValues)}
+                    selectedValue={channel.channelTypes}
+                    choices={channelTypes} /> : <React.Fragment />}
             {channel ?
                 <Grid item xl={4}>
                     <Paper style={{ height: 500, width: '100%' }}>

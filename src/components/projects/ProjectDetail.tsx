@@ -1,9 +1,7 @@
 import { Paper, Box, Grid, Stack, Divider, Typography, TextField, Chip, IconButton, Avatar } from "@mui/material";
-import LabelData from "../customs/LabelData";
 import React, { useRef, useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import { Padding } from "@mui/icons-material";
 import DatePicker from "react-datepicker";
 
 
@@ -29,11 +27,11 @@ function getLabels(label: any, changeHandler: Function, showEditButton: boolean)
 function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Function, showEditButton: boolean) {
 
     const handleDeleteAssignee = () => {
-        unnassigneHandler(user.id);
+        unnassigneHandler(undefined);
     }
 
     const handleClick = () => {
-        changeAssignee(user.id)
+        changeAssignee()
     }
 
     return (
@@ -63,7 +61,6 @@ export default function ProjectDetail(props: any) {
 
     const handleSave = () => {
         setDisabled(true);
-        const copy = project;
         project.name = nameRef.current.value;
         project.description = descRef.current.value;
         project.start = startDate;
@@ -119,7 +116,7 @@ export default function ProjectDetail(props: any) {
                                     padding: 0,
                                 }}
                             />
-                            {getUserChip(project.manager, handleDeleteAssignee, handleChangeAssigne, props.showEditButton)}
+                            {getUserChip(project.manager, props.removeManager, props.setManager, props.showEditButton)}
 
 
                         </Stack>

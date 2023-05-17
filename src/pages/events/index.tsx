@@ -6,7 +6,8 @@ import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
 import moment from 'moment';
 
-import { EventTableColumns, EventTableData, EventTableOptions } from "@/data/headers/Events";
+import { EventTableColumns } from "@/data/headers/Events";
+import EventTableRow from "@/components/events/EventTableRow";
 
 function getFirstDayOfMonth(year, month) {
     return new Date(year, month, 1);
@@ -14,7 +15,7 @@ function getFirstDayOfMonth(year, month) {
 
 export default function Events(props: any) {
     const [value, setValue] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-    const [posts, setPosts] = useState([]);
+    const [events, setEvents] = useState([]);
 
     useEffect(() => {
         fetchChannels();
@@ -31,7 +32,7 @@ export default function Events(props: any) {
         if (res.ok) {
             const json = await res.json()
             console.log(json)
-            setPosts(json)
+            setEvents(json)
         }
     }
 
@@ -55,6 +56,30 @@ export default function Events(props: any) {
 
     }
 
+    const EventTableOptions = {
+        filter: true,
+        onFilterChange: (changedColumn: any, filterList: any) => {
+        },
+        selectableRows: "none",
+        filterType: "dropdown",
+        responsive: "simple",
+        expandableRows: true,
+        tableId: "Events",
+        pagination: false,
+        elevation: 0,
+        renderExpandableRow: (rowData: any, rowMeta: any) => {
+            console.log(rowData, rowMeta);
+            return (
+                <EventTableRow rowData={rowData} updateHandler={updateHandler} />
+            );
+        }
+    };
+
+    function updateHandler(params: any) {
+        const modEvents = events.map(e => e.id === params.id ? params : e);
+        setEvents(modEvents);
+    }
+
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xs={4}>
@@ -73,7 +98,7 @@ export default function Events(props: any) {
                             onViewChange={changeView}
                             onActiveStartDateChange={onActiveStartDateChange}
                             tileClassName={({ activeStartDate, date, view }) => {
-                                if (posts.find(x => new Date(x.startDate).toDateString() >= new Date(date).toDateString("DD-MM-YYYY") 
+                                if (events.find(x => new Date(x.startDate).toDateString() >= new Date(date).toDateString("DD-MM-YYYY") 
                                 && new Date(x.endDate).toDateString() <= new Date(date).toDateString("DD-MM-YYYY"))) {
                                     return 'highlight'
                                 }
@@ -89,8 +114,8 @@ export default function Events(props: any) {
                         flexDirection: 'column',
                     }}
                 >
-                    {posts.length !== 0 ?
-                        <PostTable data={posts.filter(post => {
+                    {events.length !== 0 ?
+                        <PostTable data={events.filter(post => {
                             return value <= new Date(post.endDate) && getFirstDayOfMonth(value.getFullYear(), value.getMonth() + 1) > new Date(post.endDate)
                         }
                         )} columns={EventTableColumns} options={EventTableOptions} />

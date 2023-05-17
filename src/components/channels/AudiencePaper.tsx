@@ -1,18 +1,74 @@
 import { Grid, Paper, Box, Typography, Divider, TextField, Stack, Chip, IconButton } from "@mui/material";
 import Link from "next/link";
 import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import { useState } from "react";
+import { channel } from "diagnostics_channel";
+import React from "react";
+import LabelDialog from "../customs/LabelDialog";
+
+function getTypes(label: any, addHandler: Function) {
+    const handleClick = () => {
+        addHandler(label.id)
+    };
+
+    return (
+        <Chip
+            label={label.name}
+            onClick={handleClick}
+            color="primary"
+            id={label.id}
+            key={label.id}
+        />);
+}
 
 export default function AudiencePaper(props: any) {
     const [editMode, setEditMode] = useState(false);
     const [data, setData] = useState(props.data);
-    console.log(data)
+    const [channels, setChannels] = useState([]);
+    const [channelsOpen, setChannelsOpen] = useState(false);
 
     const handleSave = (props: any) => {
         setEditMode(false);
-        console.log(props)
     }
+
+    async function updateChannels(value: any) {
+        let addArr = [];
+        let delArr = [];
+        let res: any;
+        for (let i = 0; i < value.length; i++) {
+            if (!data.channels.includes(value[i])) {
+                addArr.push(value[i]);
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + value[i].id + "/add-audience/" + data.id, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+            }
+        }
+
+        for (let i = 0; i < data.channels.length; i++) {
+            if (!value.includes(data.channels[i])) {
+                delArr.push(data.channels[i]);
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + data.channels[i].id + "/remove-audience/" + data.id, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+            }
+        }
+        if ((delArr.length !== 0 || addArr.length != 0) && res.ok) {
+            const copy = {...data, channels: value}
+            setData(copy)
+        }
+        setChannelsOpen(false);
+    }
+
 
     return (<Grid item xs={12} md={4} lg={4}>
         <Paper
@@ -22,6 +78,12 @@ export default function AudiencePaper(props: any) {
                 flexDirection: 'column',
             }}
         >
+            {channelsOpen ? <LabelDialog
+                open={channelsOpen}
+                onClose={() => setChannelsOpen(false)}
+                onSave={(selectedValues: any) => updateChannels(selectedValues)}
+                selectedValue={data.channels}
+                choices={props.channels} /> : <React.Fragment />}
             <Box sx={{ my: 3, mx: 2, mb: 1 }} paddingBottom={1}>
                 <Grid container alignItems="center" columnSpacing={2} paddingBottom={1}>
                     <Grid item xs={11}>
@@ -59,12 +121,26 @@ export default function AudiencePaper(props: any) {
                 </Grid>
                 <Stack direction="row" spacing={1} alignItems={'center'} flexWrap={'wrap'} useFlexGap>
                     <Typography variant="body1" paddingRight={1}>Channels: </Typography>
-                    {Array.from(data.channels).map((value, index) => (
-                        <Chip
-                            label={value.name}
-                            key={value.id}
-                        />
-                    ))}
+                    {
+                        data.channels.length !== 0 ?
+
+                            Array.from(data.channels).map((value) => (
+                                getTypes(value, () => setChannelsOpen(true))
+                            ))
+                            : <Chip
+                                key={"plus"}
+                                label={
+                                    <AddIcon style={{ color: "white" }} />
+                                }
+
+                                onClick={() => setChannelsOpen(true)}
+                                id={"plus"}
+                                color="primary"
+                                clickable={props.showEditButton}
+                                variant={props.showEditButton ? "filled" : "outlined"}
+                                style={{ minWidth: 100 }}
+                            />
+                    }
                 </Stack>
             </Box>
             <Divider variant="middle" sx={{ marginBottom: 2 }} />

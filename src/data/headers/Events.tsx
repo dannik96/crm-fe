@@ -12,30 +12,20 @@ export const EventTableColumns = [
     },
     {
         name: "startDate",
-        label: "Start date"
+        label: "Start date",
+        options: {
+            customBodyRender: (value, tableMeta, updateValue) => {
+                return new Date(value).toLocaleDateString() + " " + new Date(value).toLocaleTimeString()
+            }
+        }
     },
     {
         name: "endDate",
-        label: "End date"
+        label: "End date",
+        options: {
+            customBodyRender: (value, tableMeta, updateValue) => {
+                return new Date(value).toLocaleDateString() + " " + new Date(value).toLocaleTimeString()
+            }
+        }
     }
 ];
-
-export const EventTableOptions = {
-    filter: true,
-    onFilterChange: (changedColumn: any, filterList: any) => {
-        console.log(changedColumn, filterList);
-    },
-    selectableRows: "none",
-    filterType: "dropdown",
-    responsive: "simple",
-    expandableRows: true,
-    tableId: "Posts",
-    pagination: false,
-    elevation: 0,
-    renderExpandableRow: (rowData: any, rowMeta: any) => {
-        console.log(rowData, rowMeta);
-        return (
-            <EventTableRow rowData={rowData}/>
-        );
-    }
-};

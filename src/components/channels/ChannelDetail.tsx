@@ -1,23 +1,21 @@
 import { Paper, Box, Grid, Stack, Divider, TextField, Typography, IconButton, Chip } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import React, { useState } from "react";
+import AddIcon from '@mui/icons-material/Add';
+import React, { useRef, useState } from "react";
 
-function getTypes(label: any, index : any, addHandler: Function, removeHandler: Function) {
+function getTypes(label: any, addHandler: Function) {
     const handleClick = () => {
-        removeHandler(label.id)
+        addHandler()
     };
 
-    const handleDelete = () => {
-        removeHandler(label.id)
-    };
     return (
         <Chip
             label={label.name}
             onClick={handleClick}
-            onDelete={handleDelete}
-            id={label}
-            key={index}
+            color="primary"
+            id={label.id}
+            key={label.id}
         />);
 }
 
@@ -26,33 +24,19 @@ export default function ChannelDetail(props: any) {
     const [types, setTypes] = useState(props.types);
     const [assignee, setAssignee] = useState(props.assignee);
     const [editMode, setEditMode] = useState(false);
-    console.log(assignee)
-    // TODO
-    const handleAddTypes = (id: any) => {
 
-        console.log(id);
-    }
-    const handleRemoveTypes = (id: any) => {
-        //props.updateTypes(types);
-        setTypes(types.filter((label: { id: any; }) =>
-            label.id !== id
-        ))
-    }
+    const nameRef = useRef();
+    const locationRef = useRef();
+    const descriptionRef = useRef();
 
-    const handleDeleteAssignee = (props: any) => {
-        console.log("delete");
-        console.log(props);
-        setAssignee(undefined)
-    }
-
-    const handleChangeAssigne = (props: any) => {
-        console.log("chenge assignee");
-        console.log(props);
-    }
-
-    const handleSave = (props: any) => {
+    const handleSave = () => {
         setEditMode(false);
+        const copy = channel;
+        channel.name = nameRef.current.value;
+        channel.location = locationRef.current.value;
+        channel.description = descriptionRef.current.value;
         console.log(props)
+        props.editChannel(channel);
     }
 
     return (
@@ -77,6 +61,7 @@ export default function ChannelDetail(props: any) {
                                 <TextField
                                     id="name"
                                     defaultValue={channel.name}
+                                    inputRef={nameRef}
                                     InputProps={{
                                         readOnly: editMode ? false : true,
                                         disableUnderline: editMode ? false : true,
@@ -92,6 +77,7 @@ export default function ChannelDetail(props: any) {
                                 <TextField
                                     id="location"
                                     label="Location"
+                                    inputRef={locationRef}
                                     defaultValue={channel.location}
                                     InputProps={{
                                         readOnly: editMode ? false : true,
@@ -101,9 +87,26 @@ export default function ChannelDetail(props: any) {
                                 />
                             </Stack>
                             <Stack direction="row" spacing={1}>
-                                {Array.from(channel.channelTypes).map((value, index) => (
-                                    getTypes(value, index, handleAddTypes, handleRemoveTypes) 
-                                ))}
+                                {
+                                    channel.channelTypes.length !== 0 ?
+
+                                        Array.from(channel.channelTypes).map((value) => (
+                                            getTypes(value, props.updateTypes)
+                                        ))
+                                        : <Chip
+                                            key={"plus"}
+                                            label={
+                                                <AddIcon style={{ color: "white" }} />
+                                            }
+
+                                            onClick={props.updateTypes}
+                                            id={"plus"}
+                                            color="primary"
+                                            clickable={props.showEditButton}
+                                            variant={props.showEditButton ? "filled" : "outlined"}
+                                            style={{ minWidth: 100 }}
+                                        />
+                                }
                             </Stack>
                         </Stack>
                     </Grid>
@@ -133,7 +136,20 @@ export default function ChannelDetail(props: any) {
                         <Divider variant="middle" />
                         <Box px={{ xl: 2, xs: 3 }}
                             py={{ xl: 2, xs: 2 }}>
-                            <Typography>{channel.description}</Typography>
+                            <TextField
+                                id="description"
+                                defaultValue={channel.description}
+                                inputRef={descriptionRef}
+                                InputProps={{
+                                    readOnly: !editMode,
+                                }}
+                                fullWidth
+                                multiline
+                                variant="outlined"
+                                sx={{
+                                    "& fieldset": { border: !editMode ? 'none' : "1 px" },
+                                }}
+                            />
                         </Box>
                     </React.Fragment> : <React.Fragment></React.Fragment>
             }

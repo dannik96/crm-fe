@@ -5,10 +5,11 @@ import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
 import moment from 'moment';
-import { PostTableColumns, PostTableOptions } from "@/data/headers/Posts";
+import { PostTableColumns } from "@/data/headers/Posts";
+import PostTableRow from "@/components/channels/posts/PostTableRow";
 
 
-function getFirstDayOfMonth(year, month) {
+function getFirstDayOfMonth(year: number, month: number) {
     return new Date(year, month, 1);
 }
 
@@ -55,6 +56,32 @@ export default function Posts(props: any) {
 
     }
 
+    function updatePostHandler(params: any) {
+        const modPosts = posts.map(e => e.id === params.id ? params : e);
+        console.log("params")
+        setPosts(modPosts);
+    }
+
+    const postTableOptions = {
+        filter: true,
+        onFilterChange: (changedColumn: any, filterList: any) => {
+            console.log(changedColumn, filterList);
+        },
+        selectableRows: "none",
+        filterType: "dropdown",
+        responsive: "simple",
+        expandableRows: true,
+        tableId: "Posts",
+        pagination: false,
+        elevation: 0,
+        renderExpandableRow: (rowData: any, rowMeta: any) => {
+            console.log(rowData, rowMeta);
+            return (
+                <PostTableRow rowData={rowData} updateHandler={updatePostHandler} />
+            );
+        }
+    };
+
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xs={4}>
@@ -90,8 +117,8 @@ export default function Posts(props: any) {
                 >
                     {posts.length !== 0 ? <PostTable data={posts.filter(post => {
                         return value <= new Date(post.postDate) && getFirstDayOfMonth(value.getFullYear(), value.getMonth() + 1) > new Date(post.postDate)
-                        }
-                    )} columns={PostTableColumns} options={PostTableOptions} /> : <React.Fragment />}
+                    }
+                    )} columns={PostTableColumns} options={postTableOptions} /> : <React.Fragment />}
                 </Paper>
             </Grid>
         </Grid>);

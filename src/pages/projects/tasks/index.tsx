@@ -34,7 +34,7 @@ export default function TaskPage(props: any) {
         <Grid container padding={4} spacing={3}>
             {tasks ?
                 Array.from(tasks).map((value) => (
-                    <TaskPaper task={value} />
+                    <TaskPaper key={value.id} task={value} />
                 ))
                 : <React.Fragment />
             }
