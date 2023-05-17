@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import DatePicker from "react-datepicker";
-
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -177,20 +177,28 @@ export default function ProjectDetail(props: any) {
                 </Grid>
                 {props.showEditButton ?
                     <Grid item xl={1}>
-                        {
-                            disabled ?
-                                <IconButton aria-label="edit" onClick={() => {
-                                    console.log("edit mode");
-                                    setDisabled(false)
-                                }}>
-                                    <EditIcon color="primary" />
-                                </IconButton>
+                        <Stack>
+                            <IconButton aria-label="edit" onClick={() => {
+                                props.deleteData(project.id)
+                            }}>
+                                <DeleteIcon color="primary" />
+                            </IconButton>
+                            {
+                                disabled ?
+                                    <IconButton aria-label="edit" onClick={() => {
+                                        console.log("edit mode");
+                                        setDisabled(false)
+                                    }}>
+                                        <EditIcon color="primary" />
+                                    </IconButton>
 
-                                :
-                                <IconButton aria-label="save" onClick={handleSave}>
-                                    <SaveIcon color="primary" />
-                                </IconButton>
-                        }
+                                    :
+                                    <IconButton aria-label="save" onClick={handleSave}>
+                                        <SaveIcon color="primary" />
+                                    </IconButton>
+                            }
+
+                        </Stack>
                     </Grid> : <React.Fragment />
                 }
             </Grid>

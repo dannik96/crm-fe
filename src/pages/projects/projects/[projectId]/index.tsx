@@ -170,6 +170,8 @@ function DetailPage(props: any) {
             const json = await res.json()
             setProject(json)
             console.log(json)
+        } else {
+            console.log(res.status)
         }
     }
 
@@ -191,19 +193,6 @@ function DetailPage(props: any) {
         }
     }
 
-    const deleteData = async (id: any, type: string) => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel-type/` + id, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            router.push('/projects/projects')
-        }
-    }
 
     const handleStateClickOpen = () => {
         setStateOpen(true);
@@ -217,6 +206,27 @@ function DetailPage(props: any) {
     const handleManagerClickOpen = () => {
         setManagerOpen(true);
     };
+
+    
+    const deleteData = async (id: any) => {
+        console.log(id)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + id, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            console.log("ok")
+            router.replace('/projects/projects')
+        } else {
+            console.log(res.status)
+        }
+    }
+
+
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xl={12} xs={12}>
@@ -227,6 +237,7 @@ function DetailPage(props: any) {
                     setCategory={handleCategoryClickOpen}
                     setManager={handleManagerClickOpen}
                     removeManager={handleManagerClose}
+                    deleteData={deleteData}
                     showDescription={true}
                     showEditButton={true} />}
                 {projectStates ?

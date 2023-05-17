@@ -7,6 +7,7 @@ import SimpleDialog from "@/components/customs/SimpleDialog";
 import LabelDialog from "@/components/customs/LabelDialog";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import AddIcon from '@mui/icons-material/Add';
 
 
 function getLabels(label: any, addHandler: Function, editable: boolean) {
@@ -38,7 +39,7 @@ function getStateChip(state: any, changeState: Function, editMode: boolean) {
         <Chip
             style={{ minWidth: 100 }}
             id={state ? state.id : -1}
-            label={state? state.name : ""}
+            label={state ? state.name : ""}
             variant={editMode ? "filled" : "outlined"}
             color="primary"
             clickable={editMode}
@@ -47,18 +48,22 @@ function getStateChip(state: any, changeState: Function, editMode: boolean) {
 }
 
 export default function PostTableRow(props: any) {
-    console.log(props.rowData)
     const [post, setPost] = useState(undefined);
+    const [tasks, setTasks] = useState([]);
+    const [channels, setChannels] = useState([]);
     const [postStates, setPostStates] = useState([]);
     const [editMode, setEditMode] = useState(false);
     const [taskOpen, setTaskOpen] = useState(false);
+    const [channelOpen, setChannelOpen] = useState(false);
     const [postStateOpen, setPostStateOpen] = useState(false);
     const nameRef = useRef();
     const contRef = useRef();
-    console.log(post)
+
     useEffect(() => {
-        fetchPost();
+        let fetchedPost = fetchPost();
         fetchPostStates();
+        let fetchedChannels = fetchChannels();
+        fetchTasks(fetchedChannels);
     }, [])
 
     async function fetchPost() {
@@ -71,8 +76,43 @@ export default function PostTableRow(props: any) {
 
         if (res.ok) {
             const json = await res.json()
-            console.log(json)
             setPost(json)
+            console.log(json)
+            return json;
+        }
+    }
+
+    async function fetchTasks(fetchedChannels: any[]) {
+        // const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api//`, {
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         "Authorization": "Bearer " + localStorage.getItem("token")
+        //     },
+        // })
+
+        // if (res.ok) {
+        //     const json = await res.json()
+        //     console.log(json)
+        //     setTasks(json)
+        // } else {
+        //     console.log("nok")
+        // }
+    }
+
+    async function fetchChannels() {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            setChannels(json)
+        } else {
+            console.log("nok")
         }
     }
 
@@ -86,7 +126,6 @@ export default function PostTableRow(props: any) {
 
         if (res.ok) {
             const json = await res.json()
-            console.log(json)
             setPostStates(json)
         }
     }
@@ -123,16 +162,10 @@ export default function PostTableRow(props: any) {
         })
         if (res.ok) {
             const json = await res.json()
-            console.log(json)
             props.updateHandler(json);
         }
     }
 
-    // TODO
-    const handleAddLabels = (id: any) => {
-
-        console.log(id);
-    }
     const handleUpdateState = (id: any) => {
         if (editMode)
             setPostStateOpen(true);
@@ -144,8 +177,57 @@ export default function PostTableRow(props: any) {
     }
 
     let isClearable = {
-        isClearable : editMode
+        isClearable: editMode
     }
+
+    const handleTaskClickOpen = () => {
+        if (editMode)
+            setTaskOpen(true);
+    };
+
+    const handleChannelClickOpen = () => {
+        if (editMode)
+            setChannelOpen(true);
+    };
+
+    const handleChannelChange = async (value: any[]) => {
+        let addArr = [];
+        let delArr = [];
+        let res: any;
+        for (let i = 0; i < value.length; i++) {
+            if (!post.channels.includes(value[i])) {
+                addArr.push(value[i]);
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post/` + post.id + "/add-channel/" + value[i].id, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+            }
+        }
+
+        for (let i = 0; i < post.channels.length; i++) {
+            if (!value.includes(post.channels[i])) {
+                delArr.push(post.channels[i]);
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post/` + post.id + "/remove-channel/" + post.channels[i].id, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+            }
+        }
+        if (res.ok) {
+            setPost({
+                ...post,
+                channels: value
+            })
+        }
+        console.log("click")
+        setChannelOpen(false);
+    };
 
     return (
         <TableRow>
@@ -211,12 +293,33 @@ export default function PostTableRow(props: any) {
                                     }}
                                 />
                                 <Stack direction={'row'} spacing={2} mt={2} alignItems={'center'}>
-                                    <Typography variant="body1">Tasks: </Typography>
-                                    {Array.from(post.tasks).map((value, index) => (
-                                        getLabels(value, handleAddTask, editMode)
-                                    ))}
+                                    <Typography variant="body1">Channels: </Typography>
+                                    {
+                                        post.channels.length !== 0 ?
+                                            Array.from(post.channels).map((value: any) => (
+                                                getLabels(value, handleChannelClickOpen, editMode)
+                                            ))
+                                            : <Chip
+                                                key={"plus"}
+                                                label={
+                                                    <AddIcon style={{ color: editMode ? "white" : "#1976d2" }} />
+                                                }
+                                                onClick={() => handleChannelClickOpen()}
+                                                id={"plus"}
+                                                color="primary"
+                                                clickable={editMode}
+                                                variant={editMode ? "filled" : "outlined"}
+                                                style={{ minWidth: 100 }}
+                                            />
+                                    }
+                                    {channels ?
+                                        <LabelDialog
+                                            open={channelOpen}
+                                            onClose={() => setChannelOpen(false)}
+                                            onSave={(selectedValues: any) => handleChannelChange(selectedValues)}
+                                            selectedValue={post.channels}
+                                            choices={channels} /> : <React.Fragment />}
                                 </Stack>
-
                             </Stack>
                         </Grid>
                         <Grid item xs={1}>
@@ -227,7 +330,6 @@ export default function PostTableRow(props: any) {
                                             <SaveIcon color="primary" />
                                         </IconButton> :
                                         <IconButton aria-label="delete" onClick={() => {
-                                            console.log("edit mode");
                                             setEditMode(true)
                                         }}>
                                             <EditIcon color="primary" />
@@ -238,7 +340,7 @@ export default function PostTableRow(props: any) {
                     </Grid>
                     <Divider variant="middle" />
                     <Box py={2} px={3}>
-                    <TextField
+                        <TextField
                             id="description"
                             defaultValue={post.content}
                             inputRef={contRef}

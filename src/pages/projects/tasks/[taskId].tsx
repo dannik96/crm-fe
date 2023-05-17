@@ -7,9 +7,14 @@ import TaskDetail from "@/components/projects/tasks/TaskDetail";
 import { TaskParticipantsColumns } from "@/data/headers/TaskParticipants";
 import { TaskPostsColumns } from "@/data/headers/TaskPosts";
 import { TaskSpentsColumns } from "@/data/headers/TaskSpents";
-import { Box, Button, Checkbox, Dialog, DialogTitle, Divider, FormControl, FormControlLabel, FormGroup, Grid, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Box, Button, Checkbox, Dialog, DialogTitle, Divider, FormControl, FormControlLabel, FormGroup, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import { Padding } from "@mui/icons-material";
 
 
 export default function TaskDetailPage(props: any) {
@@ -27,7 +32,14 @@ export default function TaskDetailPage(props: any) {
     const [participants, setParticipants] = useState([]);
     const [comments, setComments] = useState([]);
     const router = useRouter();
-    
+    const nameRef = useRef();
+    const contRef = useRef();
+    const [postEdit, setPostEdit] = useState(false);
+
+    let isClearable = {
+        isClearable: postEdit
+    }
+
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
@@ -35,13 +47,13 @@ export default function TaskDetailPage(props: any) {
     useEffect(() => {
         fetchTask();
         fetchTaskSpents();
-        fetchPosts();
         // TODO - need to add to DB and model
         //fetchParticipants();
         fetchPersons();
         fetchComments();
         fetchTaskStates();
         fetchTaskLabels();
+        fetchPosts();
     }, [router])
 
     const handleAddComment = async (props: any) => {
@@ -123,23 +135,6 @@ export default function TaskDetailPage(props: any) {
         }
     }
 
-    async function fetchPosts() {
-        if (router.query.taskId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/posts", {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setPosts(json)
-        }
-    }
-
     async function fetchParticipants() {
         if (router.query.taskId === undefined) {
             return;
@@ -191,6 +186,29 @@ export default function TaskDetailPage(props: any) {
         }
     }
 
+
+    async function handleSavePost() {
+        let post = task.post;
+        post.content = contRef.current.value;
+        post.name = nameRef.current.value;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(
+                post
+            )
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            setTask({ ...task, post: json });
+            setPostEdit(false);
+        }
+    }
+
     async function fetchPersons() {
         if (router.query.taskId === undefined) {
             return;
@@ -205,6 +223,24 @@ export default function TaskDetailPage(props: any) {
         if (res.ok) {
             const json = await res.json()
             setPersons(json)
+        }
+    }
+
+    async function fetchPosts() {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/project-post-by-channel", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json);
+            setPosts(json)
         }
     }
 
@@ -364,15 +400,92 @@ export default function TaskDetailPage(props: any) {
                             <CustomTable columns={TaskSpentsColumns} rows={spentTime} />
                         </Box>
                     </TabPanel>
-                    <TabPanel value={value} index={1}>
-                        <Box height={460} padding={2}>
-                            <CustomTable columns={TaskPostsColumns} rows={posts} />
-                        </Box>
-                    </TabPanel>
                     <TabPanel value={value} index={2}>
                         <Box height={460} padding={2}>
                             <CustomTable columns={TaskParticipantsColumns} rows={[]} />
                         </Box>
+                    </TabPanel>
+                    <TabPanel value={value} index={1}>
+                        {
+                            task && task.post ?
+                                <Stack height={460} padding={2} spacing={3}>
+                                    <Stack direction={'row'} spacing={1} alignItems={'baseline'}>
+                                        <TextField
+                                            id="name"
+                                            label="Name"
+                                            defaultValue={task.post.name}
+                                            InputProps={{
+                                                disabled: postEdit ? false : true,
+                                                disableUnderline: postEdit ? false : true
+                                            }}
+                                            variant="standard"
+                                            sx={{
+                                                "& fieldset": { border: postEdit ? 1 : 'none' },
+                                                maxWidth: 250
+                                            }}
+                                            inputRef={nameRef}
+                                        />
+                                        <Box display="flex" justifyContent="center">
+                                            {
+                                                !postEdit ?
+                                                    <IconButton aria-label="delete" onClick={() => {
+                                                        setPostEdit(true)
+                                                    }}>
+                                                        <EditIcon color="primary" />
+                                                    </IconButton> :
+                                                    <IconButton aria-label="delete" onClick={handleSavePost}>
+                                                        <SaveIcon color="primary" />
+                                                    </IconButton>
+                                            }
+                                        </Box>
+                                        : <React.Fragment />
+                                    </Stack>
+                                    <Stack direction={'row'}
+                                        alignItems="center"
+                                        spacing={1}>
+                                        <Typography variant="body1" minWidth={"30%"}>
+                                            Post date:
+                                        </Typography>
+                                        <DatePicker
+                                            wrapperClassName="datepicker-mw"
+                                            selected={new Date(task.post.postDate)}
+                                            onChange={(date: Date) => {
+                                                let post = task.post;
+                                                post.postDate = date;
+                                                setTask({ ...task, post: post })
+                                            }}
+                                            id="end-date"
+                                            disabled={!postEdit}
+                                            showTimeSelect
+                                            {...isClearable}
+                                            dateFormat={"dd.MM.yyyy"}
+
+                                        />
+                                    </Stack>
+                                    <TextField
+                                        id="content"
+                                        defaultValue={task.post.content}
+                                        inputRef={contRef}
+                                        InputProps={{
+                                            readOnly: !postEdit,
+                                        }}
+                                        variant="outlined"
+                                        sx={{
+                                            "& fieldset": { border: postEdit ? 1 : 'none' },
+                                            "& .MuiInputBase-root": { padding: 1 },
+                                            padding: 0,
+                                            marginBottom: 1
+                                        }}
+                                        multiline
+                                        fullWidth
+                                    />
+                                </Stack> :
+                                <Stack alignItems={'center'} justifyContent={'center'} height={400} width={'100%'}>
+                                    <Button variant="contained">
+                                        Assign post
+                                    </Button>
+                                </Stack>
+                        }
                     </TabPanel>
                 </Paper>
             </Grid>

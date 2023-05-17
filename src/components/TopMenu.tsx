@@ -22,6 +22,7 @@ import ListItemText from "@mui/material/ListItemText";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { Collapse } from "@mui/material";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import { useRouter } from 'next/router';
 
 const drawerWidth = 300;
 
@@ -45,6 +46,7 @@ const AppBar = styled(MuiAppBar, {
 
 export default function TopMenu(props: any) {
     console.log("TopMenu")
+    const router = useRouter()
     return (
         <AppBar position="absolute" open={props.sideBarOpen}>
             <Toolbar

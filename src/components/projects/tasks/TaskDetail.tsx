@@ -56,14 +56,11 @@ export default function TaskDetail(props: any) {
     const task = props.task;
     const [labels, setLabels] = useState(task.taskLabels);
     const [disabled, setDisabled] = useState(true);
-    
-
-
 
     const handleSave = (props: any) => {
         setDisabled(true);
     }
-
+    console.log(task.project)
     return (
         <Paper
             sx={{
@@ -102,9 +99,11 @@ export default function TaskDetail(props: any) {
                                             padding: 0,
                                         }}
                                     />
-                                    <Link href={"/projects/projects/" + task.project.id} style={{ textDecoration: 'none' }}>
-                                        <Typography variant="h6" component="div">{task.project.name}</Typography>
-                                    </Link>
+                                    {
+                                        <Link href={"/projects/projects/" + task.project.id} style={{ textDecoration: 'none' }}>
+                                            <Typography variant="h6" component="div">{task.project.name}</Typography>
+                                        </Link>
+                                    }
                                     {getUserChip(task.assignedPerson, props.removeManager, props.setManager, props.showEditButton)}
 
 
