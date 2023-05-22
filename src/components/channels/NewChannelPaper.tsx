@@ -9,6 +9,7 @@ import React from "react";
 import LabelDialog from "../customs/LabelDialog";
 import { useRouter } from "next/router";
 import AddIcon from '@mui/icons-material/Add';
+import { getData } from "@/util/communicationUtil";
 
 function getLabels(label: any, changeHandler: Function) {
     const handleClick = () => {
@@ -63,8 +64,8 @@ export default function NewChannelPaper(props: any) {
     const [fetchedTypes, setFetchedTypes] = useState([]);
 
     useEffect(() => {
-        fetchAudiences();
-        fetchTypes();
+        getData(setFetchedAudiences, router, "/api/audience/");
+        getData(setFetchedTypes, router, "/api/channel-type/");
     }, [])
 
     const saveData = async () => {
@@ -118,34 +119,6 @@ export default function NewChannelPaper(props: any) {
         } else {
             console.log("nok");
             return undefined;
-        }
-    }
-
-    const fetchAudiences = async () => {
-        const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/audience`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (per.ok) {
-            const res = await per.json();
-            setFetchedAudiences(res)
-        }
-    }
-
-    const fetchTypes = async () => {
-        const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel-type`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (per.ok) {
-            const res = await per.json();
-            setFetchedTypes(res)
         }
     }
 

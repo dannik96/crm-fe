@@ -7,6 +7,7 @@ import { ProjectsColumns } from "@/data/headers/Projects";
 import { TaskParticipantsColumns } from "@/data/headers/TaskParticipants";
 import { TaskPostsColumns } from "@/data/headers/TaskPosts";
 import { TaskSpentsColumns } from "@/data/headers/TaskSpents";
+import { getData } from "@/util/communicationUtil";
 import { Box, Divider, Grid, Paper, Tab, Tabs, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
@@ -53,44 +54,12 @@ export default function Channel(props: any) {
     const router = useRouter();
 
     useEffect(() => {
-        fetchChannel();
-        fetchChannelTypes();
-    }, [router])
-
-    async function fetchChannel() {
         if (!router.query.channelId) {
             return;
         }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + router.query.channelId, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setChannel(json)
-        }
-    }
-
-    async function fetchChannelTypes() {
-        if (router.query.channelId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel-type/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setChannelTypes(json)
-        }
-    }
+        getData(setChannel, router, '/api/channel' + router.query.channelId)
+        getData(setChannelTypes, router, '/api/channel-type')
+    }, [router])
 
     async function editChannel(params: any) {
         if (router.query.channelId === undefined) {

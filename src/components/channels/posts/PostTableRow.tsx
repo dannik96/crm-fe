@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Grid, Stack, TextField, Box, IconButton, Divider, Typography, Chip, MenuItem, Select, SelectChangeEvent, InputLabel, FormControl } from "@mui/material";
+import { TableRow, TableCell, Grid, Stack, TextField, Box, IconButton, Divider, Typography, Chip } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -9,6 +9,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { getData } from "@/util/communicationUtil";
+import { useRouter } from "next/router";
 
 
 function getLabels(label: any, addHandler: Function, editable: boolean) {
@@ -57,60 +59,13 @@ export default function PostTableRow(props: any) {
     const [postStateOpen, setPostStateOpen] = useState(false);
     const nameRef = useRef();
     const contRef = useRef();
+    const router = useRouter();
 
     useEffect(() => {
-        let fetchedPost = fetchPost();
-        fetchPostStates();
-        let fetchedChannels = fetchChannels();
+        getData(setPost, router, "/api/post/" + props.rowData[0])
+        getData(setPostStates, router, "/api/post-state" )
+        getData(setChannels, router, "/api/channel/")
     }, [])
-
-    async function fetchPost() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post/` + props.rowData[0], {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setPost(json)
-            console.log(json)
-            return json;
-        }
-    }
-
-
-    async function fetchChannels() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setChannels(json)
-        } else {
-            console.log("nok")
-        }
-    }
-    
-    async function fetchPostStates() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post-state`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setPostStates(json)
-        }
-    }
 
     const handlePostStateChange = async (value: any) => {
         setPostStateOpen(false);
@@ -211,7 +166,6 @@ export default function PostTableRow(props: any) {
                 channels: value
             })
         }
-        console.log("click")
         setChannelOpen(false);
     };
 

@@ -10,6 +10,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import LabelDialog from "../customs/LabelDialog";
 import AddIcon from '@mui/icons-material/Add';
 import SimpleDialog from "../customs/SimpleDialog";
+import { getData } from "@/util/communicationUtil";
+import { useRouter } from "next/router";
 
 
 function getLabels(label: any, addHandler: Function, editable: boolean) {
@@ -68,27 +70,12 @@ export default function UserTableRow(props: any) {
     const emailRef = useRef();
     const phoneRef = useRef();
 
+    const router = useRouter();
+
     useEffect(() => {
-        fetchUser();
-        fetchUserRoles();
+        getData(setUser, router, "/api/user/" + props.rowData[0]);
+        getData(setFetchedRoles, router, "/api/user/user-roles" + props.rowData[0]);
     }, [])
-
-
-    async function fetchUser() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/` + props.rowData[0], {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setUser(json)
-            setRoles(json.roles)
-        }
-    }
 
     async function fetchUserRoles() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/user-roles`, {
@@ -100,7 +87,6 @@ export default function UserTableRow(props: any) {
 
         if (res.ok) {
             const json = await res.json()
-            console.log(json)
             setFetchedRoles(json)
         }
     }
@@ -121,7 +107,6 @@ export default function UserTableRow(props: any) {
 
     async function handleSave() {
         saveRoles();
-        console.log('roles saved')
         user.username = usernameRef.current.value;
         user.email = emailRef.current.value;
         user.person.name = nameRef.current.value;
@@ -129,12 +114,10 @@ export default function UserTableRow(props: any) {
         user.person.email = emailRef.current.value;
         user.person.login = usernameRef.current.value;
         user.person.phone = phoneRef.current.value;
-        console.log(user)
         props.updateHandler(user)
     }
 
     async function saveRoles() {
-        console.log(roles)
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/` + user.id + '/set-roles', {
             method: "PATCH",
             headers: {

@@ -4,7 +4,6 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useRef, useState } from "react";
 export default function LabelsTableRow(props: any) {
     const rowData = props.rowData;
-    const rowMeta = props.rowMeta;
 
     const [disabled, setDisabled] = useState(true);
     const channelType = props.channel;
@@ -12,7 +11,6 @@ export default function LabelsTableRow(props: any) {
     const nameRef = useRef();
     const descRef = useRef();
 
-    console.log(rowData, rowMeta);
     const handleSave = () => {
         channelType.name = nameRef.current.value;
         channelType.description = descRef.current.value;
@@ -47,7 +45,6 @@ export default function LabelsTableRow(props: any) {
                                     <SaveIcon color="primary" />
                                 </IconButton> :
                                 <IconButton aria-label="edit" onClick={() => {
-                                    console.log("edit mode");
                                     setDisabled(false)
                                 }}>
                                     <EditIcon color="primary" />

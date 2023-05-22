@@ -1,5 +1,5 @@
-import { Dialog, DialogTitle, FormGroup, FormControlLabel, Checkbox, Button, TextField, DialogContent, DialogActions } from "@mui/material";
-import { useRef, useState } from "react";
+import { Dialog, DialogTitle, Button, TextField, DialogContent, DialogActions } from "@mui/material";
+import { useRef } from "react";
 
 export default function AddLabelDialog(props: any) {
     const { onClose, onSave, open, name } = props;

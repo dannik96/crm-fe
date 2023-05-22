@@ -10,6 +10,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import LabelDialog from "../customs/LabelDialog";
 import AddIcon from '@mui/icons-material/Add';
 import SimpleDialog from "../customs/SimpleDialog";
+import { getData } from "@/util/communicationUtil";
+import { useRouter } from "next/router";
 
 
 function getLabels(label: any, addHandler: Function, editable: boolean) {
@@ -57,7 +59,6 @@ function getProjectChip(project: any, unnassigneHandler: Function, changeAssigne
 }
 
 export default function EventTableRow(props: any) {
-    console.log(props)
     const [event, setEvent] = useState(undefined);
     const [editMode, setEditMode] = useState(false);
     const [labelOpen, setLabelOpen] = useState(false);
@@ -66,59 +67,18 @@ export default function EventTableRow(props: any) {
     const [projects, setProjects] = useState([]);
     const nameRef = useRef();
     const descRef = useRef();
+
+    const router = useRouter();
+
     let isClearable = {
         isClearable: editMode
     }
 
     useEffect(() => {
-        fetchEvent();
-        fetchEventTypes();
-        fetchProjects();
+        getData(setEvent, router, '/api/event/' + props.rowData[0]);
+        getData(setEventTypes, router, '/api/event-type/');
+        getData(setProjects, router, '/api/project/');
     }, [])
-
-    async function fetchEvent() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/event/` + props.rowData[0], {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setEvent(json)
-        }
-    }
-
-    async function fetchProjects() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setProjects(json)
-        }
-    }
-    async function fetchEventTypes() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/event-type/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setEventTypes(json)
-        }
-    }
 
     const handleSave = async () => {
         setEditMode(false);

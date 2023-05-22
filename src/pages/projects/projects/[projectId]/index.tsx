@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import ProjectDetail from '@/components/projects/ProjectDetail';
 import { blue } from '@mui/material/colors';
 import LabelDialog from '@/components/customs/LabelDialog';
+import { getData } from '@/util/communicationUtil';
 
 function DetailPage(props: any) {
     const [stateOpen, setStateOpen] = useState(false);
@@ -21,14 +22,18 @@ function DetailPage(props: any) {
     const [projectTasks, setProjectTasks] = useState([]);
     const [projectEvents, setProjectEvents] = useState([]);
     const router = useRouter();
-    console.log(project)
+
     useEffect(() => {
-        fetchProject();
-        fetchProjectStates();
-        fetchProjectTypes();
-        fetchPersons();
-        fetchChannels();
-        fetchProjectTasks();
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        getData(setProject, router, "/api/project/" + router.query.projectId);
+        getData(setProjectStates, router, "/api/project-state/");
+        getData(setProjectTypes, router, "/api/project-type/");
+        getData(setPersons, router, "/api/person/");
+        getData(setChannels, router, "/api/channel/");
+        getData(setPersons, router, "/api/person/");
+        getData(setProjectTasks, router, "/api/project/" + router.query.projectId + "/tasks");
         //fetchProjectParticipants();
         //fetchProjectTimeSpent();
     }, [router])
@@ -107,104 +112,6 @@ function DetailPage(props: any) {
             setProject({ ...project, manager: value });
         }
     };
-
-    async function fetchProjectTasks() {
-        if (router.query.projectId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId + "/tasks", {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setProjectTasks(json)
-        }
-    }
-
-    async function fetchProjectStates() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-state/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setProjectStates(json)
-        }
-    }
-
-    async function fetchChannels() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setChannels(json)
-        }
-    }
-
-    async function fetchProjectTypes() {
-        if (router.query.projectId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-type/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setProjectTypes(json)
-        }
-    }
-
-    async function fetchPersons() {
-        if (router.query.projectId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setPersons(json)
-        }
-    }
-
-    async function fetchProject() {
-        if (router.query.projectId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setProject(json)
-        } else {
-        }
-    }
 
     async function editProject(project: any) {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/`, {
@@ -345,7 +252,7 @@ function DetailPage(props: any) {
                 </Paper>
             </Grid>
 
-            
+
         </Grid>);
 }
 

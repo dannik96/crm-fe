@@ -1,7 +1,8 @@
+import React from "react";
 
 
 function HomePage() {
-    return (<h1>Ahoj Veru</h1>)
+    return (<React.Fragment />)
 }
 
 export default HomePage;

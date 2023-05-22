@@ -15,6 +15,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { Padding } from "@mui/icons-material";
+import { getData } from "@/util/communicationUtil";
 
 
 export default function TaskDetailPage(props: any) {
@@ -29,7 +30,7 @@ export default function TaskDetailPage(props: any) {
     const [taskStates, setTaskStates] = useState();
     const [taskLabels, setTaskLabels] = useState();
     const [managerOpen, setManagerOpen] = useState(false);
-    const [posts, setPosts] = useState([]);
+    const [posts, setTasks] = useState([]);
     const [projects, setProjects] = useState([]);
     const [participants, setParticipants] = useState([]);
     const [comments, setComments] = useState([]);
@@ -47,16 +48,20 @@ export default function TaskDetailPage(props: any) {
     };
 
     useEffect(() => {
-        fetchTask();
-        fetchTaskSpents();
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        getData(setTask, router, "/api/task/" + router.query.taskId);
+        getData(setSpentTime, router, "/api/task/" + router.query.taskId + "/spent-time");
+        getData(setPersons, router, "/api/person/");
+        getData(setComments, router, "/api/task/" + router.query.taskId + "/comments");
+        getData(setTaskStates, router, "/api/task-state/");
+        getData(setTaskLabels, router, "/api/task-label/");
+        getData(setTasks, router, "/api/task/" + router.query.taskId + "/project-post-by-channel");
+        getData(setProjects, router, "/api/project/");
+
         // TODO - need to add to DB and model
         //fetchParticipants();
-        fetchPersons();
-        fetchComments();
-        fetchTaskStates();
-        fetchTaskLabels();
-        fetchPosts();
-        fetchProjects();
     }, [router])
 
     const handleAddComment = async (props: any) => {
@@ -86,118 +91,6 @@ export default function TaskDetailPage(props: any) {
             setComments([...comments, json]);
         }
     }
-    async function fetchProjects() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setProjects(json)
-        }
-    }
-    async function fetchTaskStates() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task-state/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setTaskStates(json)
-        }
-    }
-
-    async function fetchTaskLabels() {
-        if (router.query.taskId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task-label/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setTaskLabels(json)
-        }
-    }
-
-    async function fetchComments() {
-        if (router.query.taskId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/comments", {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setComments(json)
-        }
-    }
-
-    async function fetchParticipants() {
-        if (router.query.taskId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/spent-time", {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setSpentTime(json)
-        }
-    }
-
-    async function fetchTaskSpents() {
-        if (router.query.taskId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/spent-time", {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setSpentTime(json)
-        }
-    }
-
-    async function fetchTask() {
-        if (router.query.taskId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setTask(json)
-        }
-    }
-
 
     async function editTask(param: any) {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/`, {
@@ -234,40 +127,6 @@ export default function TaskDetailPage(props: any) {
             const json = await res.json()
             setTask({ ...task, post: json });
             setPostEdit(false);
-        }
-    }
-
-    async function fetchPersons() {
-        if (router.query.taskId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/person/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setPersons(json)
-        }
-    }
-
-    async function fetchPosts() {
-        if (router.query.taskId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/project-post-by-channel", {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setPosts(json)
         }
     }
 
@@ -336,9 +195,9 @@ export default function TaskDetailPage(props: any) {
 
         if (res.ok) {
             setTask({ ...task, project: value });
-        } 
+        }
     };
-    
+
     const handleLabelsChange = async (value: any[]) => {
         let res: any;
         const filteredLabels = await task.taskLabels.filter(label => !label.deleted);
@@ -371,7 +230,7 @@ export default function TaskDetailPage(props: any) {
         }
         setLabelOpen(false);
     };
-    
+
     const handleStateChange = async (value: any) => {
         if (router.query.taskId === undefined) {
             return;

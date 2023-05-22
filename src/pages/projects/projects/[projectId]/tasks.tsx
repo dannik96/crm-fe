@@ -2,6 +2,7 @@ import PostTable from '@/components/channels/posts/PostTable';
 import SimpleDialog from '@/components/customs/SimpleDialog';
 import ProjectDetail from '@/components/projects/ProjectDetail';
 import { TaskTableColumns, TaskTableInterface } from '@/data/headers/Tasks';
+import { getData } from '@/util/communicationUtil';
 import { Button, Grid, Paper, Stack } from '@mui/material';
 import { useRouter } from 'next/router';
 import React from 'react';
@@ -13,48 +14,13 @@ function DetailPage() {
     const [project, setProject] = useState();
     const [tasks, setTasks] = useState([]);
 
-    console.log("Project")
     useEffect(() => {
-        fetchProject();
-        fetchTasks();
+        if (router.query.projectId === undefined) {
+            return;
+        }
+        getData(setProject, router, "/api/project" + router.query.projectId)
+        getData(setTasks, router, "/api/project" + router.query.projectId + "/tasks")
     }, [router])
-
-    async function fetchTasks() {
-        if (router.query.projectId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId + "/tasks", {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setTasks(json)
-        }
-    }
-
-    async function fetchProject() {
-        if (router.query.projectId === undefined) {
-            return;
-        }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setProject(json)
-            console.log(json)
-        }
-    }
-
 
     function modifyTasks(tasks: any[]) {
         let modifiedList: TaskTableInterface[] = [];
@@ -67,15 +33,12 @@ function DetailPage() {
                 state: tasks[i].taskState ? tasks[i].taskState.name : ""
             })
         }
-        console.log(modifiedList);
+        
         return modifiedList;
     }
 
     const TaskTableOptions = {
         filter: true,
-        onFilterChange: (changedColumn: any, filterList: any) => {
-            console.log(changedColumn, filterList);
-        },
         selectableRows: "none",
         filterType: "dropdown",
         responsive: "simple",
@@ -83,13 +46,11 @@ function DetailPage() {
         pagination: false,
         elevation: 0,
         onRowClick: (rowData: any[], rowState: any[]) => {
-            console.log(rowData)
             handleClick(rowData[0]);
         },
     };
 
     function handleClick(id: any) {
-        console.log(id)
         router.push("/projects/tasks/" + id);
     }
 

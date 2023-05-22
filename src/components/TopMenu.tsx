@@ -1,27 +1,11 @@
 import * as React from 'react';
-import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import MuiDrawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 import MuiAppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
-import Container from '@mui/material/Container';
-import Link from '@mui/material/Link';
 import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListSubheader from "@mui/material/ListSubheader";
-import ListItemText from "@mui/material/ListItemText";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { Collapse } from "@mui/material";
-import AssignmentIcon from "@mui/icons-material/Assignment";
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useRouter } from 'next/router';
 
 const drawerWidth = 300;
@@ -45,8 +29,17 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 export default function TopMenu(props: any) {
-    console.log("TopMenu")
     const router = useRouter()
+
+    const handleLogout = async () => {
+
+        localStorage.removeItem('token')
+        localStorage.removeItem('id')
+        localStorage.removeItem('username')
+        localStorage.removeItem('roles')
+        router.replace('/login');
+    };
+
     return (
         <AppBar position="absolute" open={props.sideBarOpen}>
             <Toolbar
@@ -75,10 +68,9 @@ export default function TopMenu(props: any) {
                 >
                     {props.siteName}
                 </Typography>
-                <IconButton color="inherit">
-                    <Badge badgeContent={4} color="secondary">
-                        <NotificationsIcon />
-                    </Badge>
+                <IconButton color="inherit" onClick={() => handleLogout()}>
+                    <LogoutIcon />
+                    <Typography variant='body1'>Logout</Typography>
                 </IconButton>
             </Toolbar>
         </AppBar>

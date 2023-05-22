@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
 import MUIDataTable, { FilterType, Responsive, SelectableRows } from "mui-datatables";
 import { labelTableColumns } from "@/data/headers/Labels";
-import { Button, IconButton, Stack, TableCell, TableRow, TextField, Typography } from "@mui/material";
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
+import { Button, Stack } from "@mui/material";
 import LabelsTableRow from "./LabelsTableRow";
 import AddLabelDialog from "../customs/AddLabelDialog";
+import { getData } from "@/util/communicationUtil";
+import { useRouter } from "next/router";
 
 export default function TaskLabelsTable(props: any) {
     const [postStates, setPostStates] = useState([]);
     const [open, setOpen] = useState(false);
 
+    const router = useRouter();
+
     useEffect(() => {
-        fetchPostStates()
+        getData(setPostStates, router, "/api/task-label/")
     }, [])
 
     async function fetchPostStates() {
@@ -25,13 +27,11 @@ export default function TaskLabelsTable(props: any) {
 
         if (res.ok) {
             const json = await res.json()
-            console.log(json)
             setPostStates(json)
         }
     }
 
     async function editPostState(postState) {
-        console.log(postState)
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-type/`, {
             method: "PUT",
             headers: {
@@ -43,19 +43,14 @@ export default function TaskLabelsTable(props: any) {
 
         if (res.ok) {
             const json = await res.json()
-            console.log(json)
         }
     }
 
     const updateData = (params: any, type: string) => {
-        console.log(params)
-        console.log(type)
         setPostStates(postStates);
     }
 
     const deleteData = async (id: any, type: string) => {
-        console.log("delete" + id)
-        console.log(postStates.filter(postState => postState.id !== id));
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task-label/` + id, {
             method: "DELETE",
             headers: {
@@ -71,9 +66,6 @@ export default function TaskLabelsTable(props: any) {
 
     const LabelTableOptions = {
         filter: true,
-        onFilterChange: (changedColumn: any, filterList: any) => {
-            console.log(changedColumn, filterList);
-        },
         selectableRows: "none" as SelectableRows,
         filterType: "dropdown" as FilterType,
         responsive: "simple" as Responsive,
@@ -82,7 +74,6 @@ export default function TaskLabelsTable(props: any) {
         pagination: false,
         elevation: 0,
         renderExpandableRow: (rowData: any, rowMeta: any) => {
-            console.log(rowData, rowMeta);
             return (
                 <LabelsTableRow rowData={rowData} rowMeta={rowMeta} channel={postStates[rowMeta.rowIndex]} editPostState={editPostState} />
             );
@@ -94,7 +85,6 @@ export default function TaskLabelsTable(props: any) {
     }
 
     async function createProjectState(projectState) {
-        console.log(projectState)
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task-label/`, {
             method: "POST",
             headers: {
@@ -106,7 +96,6 @@ export default function TaskLabelsTable(props: any) {
 
         if (res.ok) {
             const json = await res.json()
-            console.log(json)
             setPostStates([ ...postStates, json ])
         }
         setOpen(false)

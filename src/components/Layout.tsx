@@ -9,15 +9,13 @@ import { Height } from '@mui/icons-material';
 const mdTheme = createTheme();
 
 export default function Layout(props: any) {
-  console.log("Layout")
-
   const router = useRouter();
   const [sideBar, setSideBar] = React.useState(true);
 
   const [projectItem, setProjectItemOpen] = React.useState(router.route.split('/').at(1) === "projects");
   const [eventItem, setEventItemOpen] = React.useState(router.route.split('/').at(1) === "events");
   const [channelItem, setChannelItemOpen] = React.useState(router.route.split('/').at(1) === "channels");
-  
+
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => (document.body.style.overflow = "scroll");

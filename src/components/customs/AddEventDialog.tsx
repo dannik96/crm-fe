@@ -6,6 +6,8 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AddIcon from '@mui/icons-material/Add';
+import { getData } from "@/util/communicationUtil";
+import { useRouter } from "next/router";
 
 function getLabels(label: any, addHandler: Function) {
     const handleClick = () => {
@@ -64,41 +66,12 @@ export default function AddEventDialog(props: any) {
     const [fetchedEventTypes, setFetchedEventTypes] = useState([]);
     const [projects, setProjects] = useState([]);
 
+    const router = useRouter();
 
     useEffect(() => {
-        fetchEventTypes();
-        fetchProjects();
+        getData(setProjects, router, "/api/project/");
+        getData(setFetchedEventTypes, router, "/api/event-type/");
     }, [])
-
-    async function fetchProjects() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setProjects(json)
-        }
-    }
-
-    async function fetchEventTypes() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/event-type/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setFetchedEventTypes(json)
-        }
-    }
 
     const handleSave = () => {
         const event = {};

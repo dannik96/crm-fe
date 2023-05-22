@@ -30,11 +30,9 @@ export default function ChannelDetail(props: any) {
 
     const handleSave = () => {
         setEditMode(false);
-        const copy = channel;
         channel.name = nameRef.current.value;
         channel.location = locationRef.current.value;
         channel.description = descriptionRef.current.value;
-        console.log(props)
         props.editChannel(channel);
     }
 

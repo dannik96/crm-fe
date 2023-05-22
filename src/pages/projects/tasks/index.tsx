@@ -1,6 +1,7 @@
 import ProjectPaper from "@/components/projects/ProjectPaper";
 import NewTaskPaper from "@/components/projects/tasks/NewTaskPaper";
 import TaskPaper from "@/components/tasks/TaskPaper";
+import { getData } from "@/util/communicationUtil";
 import { Box, Grid } from "@mui/material";
 import { useRouter } from "next/router";
 import React from "react";
@@ -13,23 +14,8 @@ export default function TaskPage(props: any) {
     const router = useRouter();
 
     useEffect(() => {
-        fetchTasks();
+        getData(setTasks, router, "/api/task/");
     }, [router])
-
-    async function fetchTasks() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setTasks(json)
-        }
-    }
 
     return (
         <Grid container padding={4} spacing={3}>

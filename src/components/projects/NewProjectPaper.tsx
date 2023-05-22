@@ -8,6 +8,7 @@ import SimpleDialog from "../customs/SimpleDialog";
 import React from "react";
 import LabelDialog from "../customs/LabelDialog";
 import { useRouter } from "next/router";
+import { getData } from "@/util/communicationUtil";
 
 function getLabels(label: any, changeHandler: Function) {
     const handleClick = () => {
@@ -66,9 +67,9 @@ export default function NewProjectPaper(props: any) {
     const [fetchedChannels, setFetchedChannels] = useState([]);
 
     useEffect(() => {
-        fetchPersons();
-        fetchLabels();
-        fetchChannels();
+        getData(setPersons, router, "/api/person");
+        getData(setLabels, router, "/api/project-type");
+        getData(setChannels, router, "/api/channel");
     }, [])
 
     const saveData = async () => {

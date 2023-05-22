@@ -21,6 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 
 interface Data {
     id: number;
@@ -176,15 +177,15 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 export default function EventsPaper(props: any) {
-    const [order, setOrder] = React.useState<Order>(DEFAULT_ORDER);
-    const [orderBy, setOrderBy] = React.useState<keyof Data>(DEFAULT_ORDER_BY);
-    const [page, setPage] = React.useState(0);
-    const [dense, setDense] = React.useState(false);
-    const [visibleRows, setVisibleRows] = React.useState<Data[] | null>(null);
-    const [paddingHeight, setPaddingHeight] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(DEFAULT_ROWS_PER_PAGE);
+    const [order, setOrder] = useState<Order>(DEFAULT_ORDER);
+    const [orderBy, setOrderBy] = useState<keyof Data>(DEFAULT_ORDER_BY);
+    const [page, setPage] = useState(0);
+    const [dense, setDense] = useState(false);
+    const [visibleRows, setVisibleRows] = useState<Data[] | null>(null);
+    const [paddingHeight, setPaddingHeight] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
 
-    React.useEffect(() => {
+    useEffect(() => {
         let rowsOnMount = stableSort(
             rows,
             getComparator(DEFAULT_ORDER, DEFAULT_ORDER_BY),
@@ -197,7 +198,7 @@ export default function EventsPaper(props: any) {
         setVisibleRows(rowsOnMount);
     }, []);
 
-    const handleRequestSort = React.useCallback(
+    const handleRequestSort = useCallback(
         (event: React.MouseEvent<unknown>, newOrderBy: keyof Data) => {
             const isAsc = orderBy === newOrderBy && order === 'asc';
             const toggledOrder = isAsc ? 'desc' : 'asc';
@@ -214,10 +215,9 @@ export default function EventsPaper(props: any) {
         [order, orderBy, page, rowsPerPage],
     );
 
-    const handleChangePage = React.useCallback(
+    const handleChangePage = useCallback(
         (event: unknown, newPage: number) => {
             setPage(newPage);
-            console.log(newPage)
             const sortedRows = stableSort(rows, getComparator(order, orderBy));
             const updatedRows = sortedRows.slice(
                 newPage * rowsPerPage,

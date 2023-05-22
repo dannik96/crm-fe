@@ -1,14 +1,13 @@
 import { Avatar, Chip, Grid, IconButton, Paper, Stack, TextField, Typography } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
-import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { useEffect, useRef, useState } from "react";
-import SimpleDialog from "../customs/SimpleDialog";
 import React from "react";
 import LabelDialog from "../customs/LabelDialog";
 import { useRouter } from "next/router";
 import AddIcon from '@mui/icons-material/Add';
+import { getData } from "@/util/communicationUtil";
 
 function getLabels(label: any, changeHandler: Function) {
     const handleClick = () => {
@@ -59,7 +58,7 @@ export default function NewAudiencePaper(props: any) {
     const [fetchedChannels, setFetchedChannels] = useState([]);
 
     useEffect(() => {
-        fetchChannels();
+        getData(setFetchedChannels, router, "/api/channel/");
     }, [])
 
     const saveData = async () => {
@@ -67,7 +66,6 @@ export default function NewAudiencePaper(props: any) {
 
         for (let index = 0; index < channels.length; index++) {
             const element = channels[index];
-            console.log(element)
             await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + element.id + "/add-audience/" + createdAudience.id, {
                 method: "PATCH",
                 headers: {
@@ -96,7 +94,6 @@ export default function NewAudiencePaper(props: any) {
             createdAudience = await per.json();
             return createdAudience;
         } else {
-            console.log("nok");
             return undefined;
         }
     }

@@ -1,12 +1,9 @@
-import { options } from "@/util/options";
-import { Box, Button, Chip, Divider, Grid, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Divider, Grid, Paper, TextField, Typography } from "@mui/material";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 
 export default function ProjectPaper(props: any) {
     const project = props.project;
-    console.log(project)
     return (
         <Grid item xs={12} md={4} lg={4}>
             <Link href={"/projects/projects/" + project.id} style={{ textDecoration: 'none' }}>

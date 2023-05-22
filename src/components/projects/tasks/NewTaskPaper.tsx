@@ -8,6 +8,7 @@ import React from "react";
 import { useRouter } from "next/router";
 import LabelDialog from "@/components/customs/LabelDialog";
 import SimpleDialog from "@/components/customs/SimpleDialog";
+import { getData } from "@/util/communicationUtil";
 
 function getLabels(label: any, changeHandler: Function) {
     const handleClick = () => {
@@ -65,14 +66,12 @@ export default function NewTaskPaper(props: any) {
     const [fetchedLabels, setFetchedLabels] = useState([]);
 
     useEffect(() => {
-        fetchPersons();
-        fetchLabels();
-        fetchLabels();
-        fetchProjects();
+        getData(setPersons, router, "/api/person");
+        getData(setLabels, router, "/api/task-label");
+        getData(setPersons, router, "/api/project");
     }, [])
 
     const saveData = async () => {
-        console.log("create")
         const createdProject = await createTask();
         if (assignee)
             await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + createdProject.id + "/set-manager/" + assignee.id, {
@@ -85,7 +84,6 @@ export default function NewTaskPaper(props: any) {
 
         for (let index = 0; index < labels.length; index++) {
             const element = labels[index];
-            console.log(element)
             await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + createdProject.id + "/add-channel/" + element.id, {
                 method: "PATCH",
                 headers: {
@@ -99,7 +97,6 @@ export default function NewTaskPaper(props: any) {
 
     const createTask = async () => {
         const newTask = {};
-        console.log(nameRef.current.value)
         newTask.name = nameRef.current.value;
         newTask.description = descRef.current.value;
         newTask.deadline = to;
@@ -116,53 +113,10 @@ export default function NewTaskPaper(props: any) {
             createdProject = await per.json();
             return createdProject;
         } else {
-            console.log("nok");
             return undefined;
         }
     }
-
-    const fetchProjects = async () => {
-        const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (per.ok) {
-            const res = await per.json();
-            setProjects(res)
-        }
-    }
-
-    const fetchPersons = async () => {
-        const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/person`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (per.ok) {
-            const res = await per.json();
-            setPersons(res)
-        }
-    }
-
-    const fetchLabels = async () => {
-        const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task-label`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (per.ok) {
-            const res = await per.json();
-            setFetchedLabels(res)
-        }
-    }
-
+    
     const handleManagerClose = (param: any) => {
         setAssignee(param);
         setAssigneeOpen(false);

@@ -1,35 +1,22 @@
 import PostTable from "@/components/channels/posts/PostTable";
 import UserTableRow from "@/components/customs/UserTableRow";
-import { EventTableData, EventTableColumns } from "@/data/headers/Events";
 import { UserTableColumns } from "@/data/headers/Users";
-import { Box, Grid, Paper } from "@mui/material";
+import { getData } from "@/util/communicationUtil";
+import { Grid, Paper } from "@mui/material";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 
 export default function Settings(props: any) {
     const [users, setUsers] = useState([]);
+    const router = useRouter();
 
     useEffect(() => {
-        fetchUsers();
+        getData(setUsers, router, "/api/user/");
     }, [])
 
-    const fetchUsers = async () => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setUsers(json)
-            console.log(json)
-        }
-    }
 
     const updateHandler = async (param) => {
-        console.log('updateHandler')
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/`, {
             method: "PUT",
             headers: {
@@ -76,7 +63,7 @@ export default function Settings(props: any) {
                         p: 2
                     }}
                 >
-                    <PostTable data={users} columns={UserTableColumns} options={UserTableOptions} header={'Users'}/>
+                    <PostTable data={users} columns={UserTableColumns} options={UserTableOptions} header={'Users'} />
                 </Paper>
             </Grid>
         </Grid>)

@@ -2,28 +2,15 @@ import { Grid } from '@mui/material';
 import ProjectPaper from '@/components/projects/ProjectPaper';
 import { useEffect, useState } from 'react';
 import NewProjectPaper from '@/components/projects/NewProjectPaper';
+import { getData } from '@/util/communicationUtil';
+import { useRouter } from 'next/router';
 
 function Projects() {
     const [projects, setProjects] = useState([]);
+    const router = useRouter();
     useEffect(() => {
-        fetchProjects();
+        getData(setProjects, router, "/api/project")
     }, [])
-
-    async function fetchProjects() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setProjects(json)
-        }
-    }
-
-
 
     return (
         <Grid container padding={4} spacing={3}>

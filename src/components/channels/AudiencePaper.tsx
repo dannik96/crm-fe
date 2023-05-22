@@ -1,11 +1,9 @@
 import { Grid, Paper, Box, Typography, Divider, TextField, Stack, Chip, IconButton } from "@mui/material";
-import Link from "next/link";
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState } from "react";
-import { channel } from "diagnostics_channel";
 import React from "react";
 import LabelDialog from "../customs/LabelDialog";
 
@@ -27,7 +25,6 @@ function getTypes(label: any, addHandler: Function) {
 export default function AudiencePaper(props: any) {
     const [editMode, setEditMode] = useState(false);
     const [data, setData] = useState(props.data);
-    const [channels, setChannels] = useState([]);
     const [channelsOpen, setChannelsOpen] = useState(false);
    
     const handleSave = (props: any) => {

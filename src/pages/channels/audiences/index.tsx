@@ -1,5 +1,6 @@
 import AudiencePaper from "@/components/channels/AudiencePaper";
 import NewAudiencePaper from "@/components/channels/NewAudiencePaper";
+import { getData } from "@/util/communicationUtil";
 import { Grid } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -11,40 +12,9 @@ export default function AudiencesPage(props: any) {
     const router = useRouter();
 
     useEffect(() => {
-        fetchAudiences();
-        fetchChannels();
+        getData(setAudiences, router, '/api/audience')
+        getData(setChannels, router, '/api/channel')
     }, [])
-
-    async function fetchAudiences() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/audience/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setAudiences(json)
-        }
-    }
-
-    async function fetchChannels() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setChannels(json)
-        }
-    }
-
 
     async function deleteData(data : any) {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/audience/` + data.id, {
@@ -54,7 +24,6 @@ export default function AudiencesPage(props: any) {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             },
         })
-        console.log(res.status);
         if (res.ok) {
             router.reload()
         }

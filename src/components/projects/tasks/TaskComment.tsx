@@ -2,7 +2,6 @@ import { Box, Stack, Typography } from "@mui/material";
 
 
 export default function TaskComment(props: any) {
-    console.log(props.comment)
     return (
         <Box>
             <Stack

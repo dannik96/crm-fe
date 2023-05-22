@@ -1,22 +1,10 @@
-import { Box, Button, Chip, Container, Divider, Grid, Icon, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Chip, Divider, Grid, Icon, Paper, Stack, TextField, Typography } from "@mui/material";
 import Link from "next/link";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import React from "react";
 
-const data = {
-    name: "Tootbrush",
-    timeSpent: 12,
-    assignee: "Manager",
-    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Mauris dolor felis, sagittis at, luctus sed, aliquam non, tellus. Etiam commodo dui eget wisi. Curabitur bibendum justo non orci. Integer lacinia. Etiam ligula pede, sagittis quis, interdum ultricies, scelerisque eu. Nulla pulvinar eleifend sem. Curabitur sagittis hendrerit ante. Nullam sit amet magna in magna gravida vehicula. Morbi scelerisque luctus velit. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. Cras elementum. Etiam sapien elit, consequat eget, tristique non, venenatis quis, ante.",
-    deadline: "2.2.2023",
-    state: "Open",
-    labels: ["Hiring", "Meeting", "Offline activity", "Offline activity", "Offline activity", "Offline activity"]
-}
-
-
 export default function TaskPaper(props: any) {
     const task = props.task;
-    console.log(task)
     return (
         <Grid item xs={12} md={4} lg={4}>
             <Link href={"/projects/tasks/" + task.id} style={{ textDecoration: 'none' }}>

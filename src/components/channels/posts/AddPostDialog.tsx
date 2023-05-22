@@ -6,6 +6,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import AddIcon from '@mui/icons-material/Add';
 import LabelDialog from "@/components/customs/LabelDialog";
 import SimpleDialog from "@/components/customs/SimpleDialog";
+import { getData } from "@/util/communicationUtil";
+import { useRouter } from "next/router";
 
 function getLabels(label: any, addHandler: Function) {
     const handleClick = () => {
@@ -63,41 +65,12 @@ export default function AddPostDialog(props: any) {
     const [fetchedChannels, setFetchedChannels] = useState([]);
     const [persons, setPersons] = useState([]);
 
+    const router = useRouter();
 
     useEffect(() => {
-        fetchEventTypes();
-        fetchPersons();
+        getData(setPersons, router, "/api/person/");
+        getData(setFetchedChannels, router, "/api/channel/");
     }, [])
-
-    async function fetchPersons() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/person/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setPersons(json)
-        }
-    }
-
-    async function fetchEventTypes() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            console.log(json)
-            setFetchedChannels(json)
-        }
-    }
 
     const handleSave = () => {
         const event = {};
