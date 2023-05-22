@@ -149,6 +149,21 @@ export default function Channel(props: any) {
         setChannelTypesOpen(false);
     };
 
+    const deleteData = async (id: any) => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/` + id, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            router.replace('/channels/channels')
+        }
+    }
+
+
     const handleTypesClickOpen = (types: any) => {
         setChannelTypesOpen(true)
     }
@@ -161,6 +176,7 @@ export default function Channel(props: any) {
                         channel={channel}
                         showDescription={true}
                         showEditButton={true}
+                        deleteData={deleteData}
                         editChannel={editChannel}
                         updateTypes={handleTypesClickOpen} />
                 </Grid>

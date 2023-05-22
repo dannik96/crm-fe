@@ -1,6 +1,7 @@
 import { Box, Button, Chip, Container, Divider, Grid, Icon, Paper, Stack, TextField, Typography } from "@mui/material";
 import Link from "next/link";
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import React from "react";
 
 const data = {
     name: "Tootbrush",
@@ -15,7 +16,7 @@ const data = {
 
 export default function TaskPaper(props: any) {
     const task = props.task;
-
+    console.log(task)
     return (
         <Grid item xs={12} md={4} lg={4}>
             <Link href={"/projects/tasks/" + task.id} style={{ textDecoration: 'none' }}>
@@ -35,7 +36,7 @@ export default function TaskPaper(props: any) {
                             </Grid>
                             <Grid item xs={1}>
                                 <Icon>
-                                    <VisibilityIcon color="primary"/>
+                                    <VisibilityIcon color="primary" />
                                 </Icon>
                             </Grid>
                             <Grid item xs={11}>
@@ -51,7 +52,7 @@ export default function TaskPaper(props: any) {
                             <TextField
                                 id="standard-read-only-input"
                                 label="Project"
-                                defaultValue={task.project.name}
+                                defaultValue={task.project? task.project.name : ""}
                                 InputProps={{
                                     readOnly: true,
                                     disableUnderline: true
@@ -61,15 +62,18 @@ export default function TaskPaper(props: any) {
                             <Stack direction="row" spacing={1} flexWrap={'wrap'} alignItems={'center'} useFlexGap>
 
                                 <Typography variant="body1">State</Typography>
-                                <Chip
-                                    label={task.taskState.name}
-                                    variant="outlined"
-                                    color="primary"
-                                />
+                                {
+                                    !task.taskState || task.taskState.deleted ? <React.Fragment></React.Fragment> :
+                                        <Chip
+                                            label={task.taskState.name}
+                                            variant="outlined"
+                                            color="primary"
+                                        />
+                                }
                             </Stack>
                             <Stack direction="row" spacing={1} flexWrap={'wrap'} alignItems={'center'} useFlexGap>
                                 <Typography variant="body1">Labels</Typography>
-                                {Array.from(task.taskLabels).map((value) => (
+                                {Array.from(task.taskLabels.filter((taskLabel : any) => !taskLabel.deleted)).map((value) => (
                                     <Chip
                                         label={value.name}
                                         key={value.id}

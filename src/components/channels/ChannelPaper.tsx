@@ -3,14 +3,6 @@ import Link from "next/link";
 import EditIcon from '@mui/icons-material/Edit';
 
 
-const data = {
-    name: "Tootbrush",
-    location: "Internet",
-    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Mauris dolor felis, sagittis at, luctus sed, aliquam non, tellus. Etiam commodo dui eget wisi. Curabitur bibendum justo non orci. Integer lacinia. Etiam ligula pede, sagittis quis, interdum ultricies, scelerisque eu. Nulla pulvinar eleifend sem. Curabitur sagittis hendrerit ante. Nullam sit amet magna in magna gravida vehicula. Morbi scelerisque luctus velit. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. Cras elementum. Etiam sapien elit, consequat eget, tristique non, venenatis quis, ante.",
-    types: ["Hiring", "Meeting", "Offline activity", "Offline activity", "Offline activity", "Offline activity"],
-    numberOfPosts: 50
-}
-
 export default function ChannelPaper(props: any) {
     const channel = props.channel;
     return (
@@ -65,7 +57,7 @@ export default function ChannelPaper(props: any) {
                             </Grid>
                         </Grid>
                         <Stack direction="row" spacing={1} flexWrap={'wrap'} useFlexGap>
-                            {Array.from(channel.channelTypes).map((value, index) => (
+                            {Array.from(channel.channelTypes.filter(val => !val.deleted)).map((value, index) => (
                                 <Chip
                                     label={value.name}
                                     key={index}

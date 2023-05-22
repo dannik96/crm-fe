@@ -1,4 +1,6 @@
 import PostTableRow from "@/components/channels/posts/PostTableRow";
+import CloseIcon from '@mui/icons-material/Close';
+import React from "react";
 
 export const UserTableColumns = [
     {
@@ -6,7 +8,7 @@ export const UserTableColumns = [
         label: "Id"
     },
     {
-        name: "userName",
+        name: "username",
         label: "User name"
     },
     {
@@ -14,21 +16,24 @@ export const UserTableColumns = [
         label: "Email"
     },
     {
-        name: "userRoles",
-        label: "User role"
+        name: "roles",
+        label: "User role",
+        options: {
+            customBodyRender: (value, tableMeta, updateValue) => {
+                return getLines(value)
+            }
+        }
+    },
+    {
+        name: "deleted",
+        label: "Active",
+        options: {
+            customBodyRender: (value, tableMeta, updateValue) => {
+                return !value ? <React.Fragment /> : <CloseIcon />
+            }
+        }
     }
 ];
-
-export const UserTableData =
-    [{ id: 1, userName: "Gabby George", email: "gabby.george@seznam.cz", userRoles: "gabby.george@seznam.cz" },
-    { id: 2, userName: "Gabby George", email: "gabby.george@seznam.cz", userRoles: "gabby.george@seznam.cz" },
-    { id: 3, userName: "Gabby George", email: "gabby.george@seznam.cz", userRoles: "gabby.george@seznam.cz" },
-    { id: 4, userName: "Gabby George", email: "gabby.george@seznam.cz", userRoles: "gabby.george@seznam.cz" },
-    { id: 5, userName: "Gabby George", email: "gabby.george@seznam.cz", userRoles: "gabby.george@seznam.cz" },
-    { id: 6, userName: "Gabby George", email: "gabby.george@seznam.cz", userRoles: "gabby.george@seznam.cz" },
-    { id: 7, userName: "Gabby George", email: "gabby.george@seznam.cz", userRoles: "gabby.george@seznam.cz" },
-    { id: 8, userName: "Gabby George", email: "gabby.george@s eznam.cz", userRoles: "gabby.george@seznam.cz" }
-    ];
 
 export const UserTableOptions = {
     filter: true,
@@ -49,3 +54,14 @@ export const UserTableOptions = {
         );
     }
 };
+
+function getLines(value: any) {
+    let str = "";
+    for(let i = 0; i< value.length; i++) {
+        str += value[i].name;
+        if (i !== value.length -1) {
+            str += ", "
+        }
+    }
+    return str;
+}

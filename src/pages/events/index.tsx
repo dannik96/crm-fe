@@ -1,6 +1,6 @@
 import PostTable from "@/components/channels/posts/PostTable";
 import CustomTable from "@/components/customs/CustomTable";
-import { Box, Grid, Paper } from "@mui/material";
+import { Box, Button, Grid, Paper } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
@@ -8,6 +8,8 @@ import moment from 'moment';
 
 import { EventTableColumns } from "@/data/headers/Events";
 import EventTableRow from "@/components/events/EventTableRow";
+import AddEventDialog from "@/components/customs/AddEventDialog";
+import { create } from "domain";
 
 function getFirstDayOfMonth(year, month) {
     return new Date(year, month, 1);
@@ -16,6 +18,7 @@ function getFirstDayOfMonth(year, month) {
 export default function Events(props: any) {
     const [value, setValue] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
     const [events, setEvents] = useState([]);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         fetchChannels();
@@ -70,7 +73,7 @@ export default function Events(props: any) {
         renderExpandableRow: (rowData: any, rowMeta: any) => {
             console.log(rowData, rowMeta);
             return (
-                <EventTableRow rowData={rowData} updateHandler={updateHandler} />
+                <EventTableRow rowData={rowData} updateHandler={updateHandler} deleteData={deleteData} />
             );
         }
     };
@@ -78,6 +81,48 @@ export default function Events(props: any) {
     function updateHandler(params: any) {
         const modEvents = events.map(e => e.id === params.id ? params : e);
         setEvents(modEvents);
+    }
+
+    async function deleteData(param: any) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/event/` + param.id, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+        })
+
+        if (res.ok) {
+            const modEvents = events.filter(ev => ev.id !== param.id);
+            setEvents(modEvents)
+        }
+    }
+
+    async function createEvent(param: any) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/event/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(param)
+        })
+
+        if (res.ok) {
+            const modEvents = await res.json();
+            console.log(modEvents);
+            setEvents([...events, modEvents])
+        }
+        setOpen(false)
+    }
+
+    function compareDates(x: never, date: Date): unknown {
+        const startDate = new Date(x.startDate);
+        startDate.setHours(0,0,0,0);
+        const endDate = new Date(x.endDate);
+        endDate.setHours(0,0,0,0);
+
+        return startDate.getTime() <= date.getTime() && date.getTime() <= endDate.getTime();
     }
 
     return (
@@ -98,9 +143,8 @@ export default function Events(props: any) {
                             onViewChange={changeView}
                             onActiveStartDateChange={onActiveStartDateChange}
                             tileClassName={({ activeStartDate, date, view }) => {
-                                if (events.find(x => new Date(x.startDate).toDateString() >= new Date(date).toDateString("DD-MM-YYYY") 
-                                && new Date(x.endDate).toDateString() <= new Date(date).toDateString("DD-MM-YYYY"))) {
-                                    return 'highlight'
+                                if (events.find(x => compareDates(x, date))) {
+                                    return 'highlight';
                                 }
                             }} />
                     </Grid>
@@ -114,12 +158,13 @@ export default function Events(props: any) {
                         flexDirection: 'column',
                     }}
                 >
-                    {events.length !== 0 ?
-                        <PostTable data={events.filter(post => {
-                            return value <= new Date(post.endDate) && getFirstDayOfMonth(value.getFullYear(), value.getMonth() + 1) > new Date(post.endDate)
-                        }
-                        )} columns={EventTableColumns} options={EventTableOptions} />
-                        : <React.Fragment />}
+                    <Button variant="contained" onClick={() => setOpen(true)}>Add new</Button>
+                    {<AddEventDialog onClose={() => setOpen(false)} open={open} onSave={createEvent} />}
+
+                    <PostTable data={events.filter(post => {
+                        return value <= new Date(post.endDate) && getFirstDayOfMonth(value.getFullYear(), value.getMonth() + 1) > new Date(post.endDate)
+                    }
+                    )} columns={EventTableColumns} options={EventTableOptions} />
                 </Paper>
             </Grid>
         </Grid>);

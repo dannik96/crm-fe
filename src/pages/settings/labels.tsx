@@ -1,4 +1,5 @@
 import PostTable from "@/components/channels/posts/PostTable";
+import AddLabelDialog from "@/components/customs/AddLabelDialog";
 import ChannelTypesTable from "@/components/labels/ChannelTypesTable";
 import EventTypeTable from "@/components/labels/EventTypeTable";
 import PostStateTable from "@/components/labels/PostStatesTable";
@@ -12,6 +13,7 @@ import { useEffect, useState } from "react";
 
 
 export default function Labels(props: any) {
+
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xs={12} sx={{ mx: 2 }}>
@@ -32,7 +34,7 @@ export default function Labels(props: any) {
                         p: 2
                     }}
                 >
-                    <ProjectStatesTable />
+                    <ProjectStatesTable/>
                 </Paper>
             </Grid>
             <Grid item xl={6}>
@@ -85,6 +87,5 @@ export default function Labels(props: any) {
                     <EventTypeTable />
                 </Paper>
             </Grid>
-
         </Grid>)
 }

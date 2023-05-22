@@ -1,8 +1,9 @@
 import { Grid } from '@mui/material';
 import ProjectPaper from '@/components/projects/ProjectPaper';
 import { useEffect, useState } from 'react';
+import NewProjectPaper from '@/components/projects/NewProjectPaper';
 
-function NewsPage() {
+function Projects() {
     const [projects, setProjects] = useState([]);
     useEffect(() => {
         fetchProjects();
@@ -22,13 +23,16 @@ function NewsPage() {
         }
     }
 
+
+
     return (
         <Grid container padding={4} spacing={3}>
             {projects.map(project =>
                 <ProjectPaper key={project.id} project={project}></ProjectPaper>
             )}
+            <NewProjectPaper></NewProjectPaper>
         </Grid>
     )
 }
 
-export default NewsPage;
+export default Projects;

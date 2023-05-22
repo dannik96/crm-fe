@@ -16,13 +16,38 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 const theme = createTheme();
 
 export default function SignIn() {
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         console.log({
-            email: data.get('email'),
+            username: data.get('email'),
             password: data.get('password'),
         });
+
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signin`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+                username: data.get('email'),
+                password: data.get('password'),
+            })
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            localStorage.setItem('token', json.token)
+            localStorage.setItem('id', json.id)
+            localStorage.setItem('username', json.username)
+            localStorage.setItem('roles', json.roles)
+            console.log(localStorage)
+        } else {
+            console.log(await res.status)
+        }
     };
 
     return (

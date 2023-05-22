@@ -1,7 +1,8 @@
 import PostTable from '@/components/channels/posts/PostTable';
+import SimpleDialog from '@/components/customs/SimpleDialog';
 import ProjectDetail from '@/components/projects/ProjectDetail';
 import { TaskTableColumns, TaskTableInterface } from '@/data/headers/Tasks';
-import { Grid, Paper, Stack } from '@mui/material';
+import { Button, Grid, Paper, Stack } from '@mui/material';
 import { useRouter } from 'next/router';
 import React from 'react';
 import { useEffect, useState } from 'react';
@@ -10,7 +11,6 @@ import { useEffect, useState } from 'react';
 function DetailPage() {
     const router = useRouter();
     const [project, setProject] = useState();
-    const [states, setStates] = useState([]);
     const [tasks, setTasks] = useState([]);
 
     console.log("Project")
@@ -55,14 +55,14 @@ function DetailPage() {
         }
     }
 
-    
+
     function modifyTasks(tasks: any[]) {
         let modifiedList: TaskTableInterface[] = [];
         for (let i = 0; i < tasks.length; i++) {
             modifiedList.push({
                 id: tasks[i].id,
                 name: tasks[i].name,
-                deadline: tasks[i].deadline ? new Date(tasks[i].deadline).toLocaleDateString("cs-CS") : "", 
+                deadline: tasks[i].deadline ? new Date(tasks[i].deadline).toLocaleDateString("cs-CS") : "",
                 assignee: tasks[i].assignedPerson ? tasks[i].assignedPerson.name + " " + tasks[i].assignedPerson.surname : "",
                 state: tasks[i].taskState ? tasks[i].taskState.name : ""
             })

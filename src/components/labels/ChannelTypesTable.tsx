@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import MUIDataTable, { FilterType, Responsive, SelectableRows } from "mui-datatables";
 import { labelTableColumns } from "@/data/headers/Labels";
-import { IconButton, Stack, TableCell, TableRow, TextField, Typography } from "@mui/material";
+import { Button, IconButton, Stack, TableCell, TableRow, TextField, Typography } from "@mui/material";
 import LabelsTableRow from "./LabelsTableRow";
+import AddLabelDialog from "../customs/AddLabelDialog";
 
 
 export default function ChannelTypesTable(props: any) {
     const [postStates, setPostStates] = useState([]);
-    const [disabled, setDisabled] = useState<boolean[] | []>([]);
-    const nameRef = useRef(null);
-    const descRef = useRef(null);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         fetchPostStates()
@@ -27,7 +26,6 @@ export default function ChannelTypesTable(props: any) {
             const json = await res.json()
             console.log(json)
             setPostStates(json)
-            setDisabled(Array(json.length).fill(true))
         }
     }
 
@@ -86,19 +84,46 @@ export default function ChannelTypesTable(props: any) {
         renderExpandableRow: (rowData: any, rowMeta: any) => {
             console.log(rowMeta)
             return (
-            <LabelsTableRow rowData={rowData} rowMeta={rowMeta} channel={postStates[rowMeta.rowIndex]} editPostState={editPostState}/>);
+                <LabelsTableRow rowData={rowData} rowMeta={rowMeta} channel={postStates[rowMeta.rowIndex]} editPostState={editPostState} />);
         }
     };
 
-    return (
-        <MUIDataTable
-            title={"Channels"}
-            data={postStates}
-            columns={labelTableColumns(updateData, deleteData, "channels")}
-            options={LabelTableOptions}
-            key={'channel'}
+    const getIsDeletable = (id: number) => {
+        return postStates.filter(val => val.id === id)[0].deletable;
+    }
 
-        />
+    async function createProjectState(projectState) {
+        console.log(projectState)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/event-type/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(projectState)
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            setPostStates([...postStates, json])
+        }
+        setOpen(false)
+    }
+    return (
+        <Stack direction={'column'} spacing={1}>
+            <Button variant="contained" onClick={() => setOpen(true)}>Add new</Button>
+            {<AddLabelDialog onClose={() => setOpen(false)} open={open} name={'Channel type'} onSave={(value) => createProjectState(value)} />}
+
+            <MUIDataTable
+                title={"Channels"}
+                data={postStates}
+                columns={labelTableColumns(updateData, deleteData, "channels", getIsDeletable)}
+                options={LabelTableOptions}
+                key={'channel'}
+
+            />
+        </Stack>
     );
 };
 

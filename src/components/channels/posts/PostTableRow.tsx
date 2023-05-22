@@ -8,6 +8,7 @@ import LabelDialog from "@/components/customs/LabelDialog";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 function getLabels(label: any, addHandler: Function, editable: boolean) {
@@ -49,11 +50,9 @@ function getStateChip(state: any, changeState: Function, editMode: boolean) {
 
 export default function PostTableRow(props: any) {
     const [post, setPost] = useState(undefined);
-    const [tasks, setTasks] = useState([]);
     const [channels, setChannels] = useState([]);
     const [postStates, setPostStates] = useState([]);
     const [editMode, setEditMode] = useState(false);
-    const [taskOpen, setTaskOpen] = useState(false);
     const [channelOpen, setChannelOpen] = useState(false);
     const [postStateOpen, setPostStateOpen] = useState(false);
     const nameRef = useRef();
@@ -63,7 +62,6 @@ export default function PostTableRow(props: any) {
         let fetchedPost = fetchPost();
         fetchPostStates();
         let fetchedChannels = fetchChannels();
-        fetchTasks(fetchedChannels);
     }, [])
 
     async function fetchPost() {
@@ -82,22 +80,6 @@ export default function PostTableRow(props: any) {
         }
     }
 
-    async function fetchTasks(fetchedChannels: any[]) {
-        // const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api//`, {
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //         "Authorization": "Bearer " + localStorage.getItem("token")
-        //     },
-        // })
-
-        // if (res.ok) {
-        //     const json = await res.json()
-        //     console.log(json)
-        //     setTasks(json)
-        // } else {
-        //     console.log("nok")
-        // }
-    }
 
     async function fetchChannels() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/`, {
@@ -115,7 +97,7 @@ export default function PostTableRow(props: any) {
             console.log("nok")
         }
     }
-
+    
     async function fetchPostStates() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post-state`, {
             headers: {
@@ -166,24 +148,28 @@ export default function PostTableRow(props: any) {
         }
     }
 
+    const deleteData = async () => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/post/` + post.id, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        if (res.ok) {
+            props.deleteData(post);
+        }
+    }
+
     const handleUpdateState = (id: any) => {
         if (editMode)
             setPostStateOpen(true);
     }
 
-    // TODO
-    const handleAddTask = (id: any) => {
-        setTaskOpen(true);
-    }
 
     let isClearable = {
         isClearable: editMode
     }
-
-    const handleTaskClickOpen = () => {
-        if (editMode)
-            setTaskOpen(true);
-    };
 
     const handleChannelClickOpen = () => {
         if (editMode)
@@ -263,7 +249,6 @@ export default function PostTableRow(props: any) {
                                         id="end-date"
                                         disabled={!editMode}
                                         showTimeSelect
-                                        {...isClearable}
                                         dateFormat={"dd.MM.yyyy"}
                                     />
                                 </Stack>
@@ -323,7 +308,12 @@ export default function PostTableRow(props: any) {
                             </Stack>
                         </Grid>
                         <Grid item xs={1}>
-                            <Box display="flex" justifyContent="center">
+                            <Stack direction={'column'}>
+                                    <IconButton aria-label="edit" onClick={() => {
+                                        deleteData()
+                                    }}>
+                                        <DeleteIcon color="primary" />
+                                    </IconButton>
                                 {
                                     editMode ?
                                         <IconButton aria-label="delete" onClick={handleSave}>
@@ -335,7 +325,7 @@ export default function PostTableRow(props: any) {
                                             <EditIcon color="primary" />
                                         </IconButton>
                                 }
-                            </Box>
+                            </Stack>
                         </Grid>
                     </Grid>
                     <Divider variant="middle" />

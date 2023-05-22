@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, FormGroup, FormControlLabel, Checkbox, Button } from "@mui/material";
+import { Dialog, DialogTitle, FormGroup, FormControlLabel, Checkbox, Button, DialogContent, DialogActions } from "@mui/material";
 import { useState } from "react";
 
 export default function LabelDialog(props: any) {
@@ -15,24 +15,28 @@ export default function LabelDialog(props: any) {
     return (
         <Dialog onClose={onClose} open={open}>
             <DialogTitle>Set backup account</DialogTitle>
-            <FormGroup sx={{ pt: 0 }}>
-                {choices.map((choice: any) => (
-                    <FormControlLabel
-                        key={choice.id}
-                        control={
-                            <Checkbox
-                                checked={selectedValues.filter(val => {
-                                    return val.id === choice.id
-                                }).length === 1} />}
-                        onChange={() =>
-                            handleListItemClick(choice)}
-                        label={choice.surname ? choice.name + " " + choice.surname : choice.name}
-                    />
-                ))}
-            </FormGroup>
-            <Button autoFocus onClick={() => onSave(selectedValues)}>
-                Save changes
-            </Button>
+            <DialogContent>
+                <FormGroup sx={{ pt: 0 }}>
+                    {choices.map((choice: any) => (
+                        <FormControlLabel
+                            key={choice.id}
+                            control={
+                                <Checkbox
+                                    checked={selectedValues.filter(val => {
+                                        return val.id === choice.id
+                                    }).length === 1} />}
+                            onChange={() =>
+                                handleListItemClick(choice)}
+                            label={choice.surname ? choice.name + " " + choice.surname : choice.name}
+                        />
+                    ))}
+                </FormGroup>
+            </DialogContent>
+            <DialogActions>
+                <Button autoFocus onClick={() => onSave(selectedValues)}>
+                    Save changes
+                </Button>
+            </DialogActions>
         </Dialog>
     );
 }

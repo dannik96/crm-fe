@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import MUIDataTable, { FilterType, Responsive, SelectableRows } from "mui-datatables";
 import { labelTableColumns } from "@/data/headers/Labels";
-import { IconButton, Stack, TableCell, TableRow, TextField, Typography } from "@mui/material";
+import { Button, IconButton, Stack, TableCell, TableRow, TextField, Typography } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import LabelsTableRow from "./LabelsTableRow";
+import AddLabelDialog from "../customs/AddLabelDialog";
 
-export default function ProjectStatesTable (props: any) {
+export default function ProjectStatesTable(props: any) {
     const [postStates, setPostStates] = useState([]);
-    
+    const [open, setOpen] = useState(false);
+
     useEffect(() => {
         fetchPostStates()
     }, [])
@@ -29,7 +31,7 @@ export default function ProjectStatesTable (props: any) {
     }
     async function editPostState(postState) {
         console.log(postState)
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-type/`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-state/`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -41,6 +43,7 @@ export default function ProjectStatesTable (props: any) {
         if (res.ok) {
             const json = await res.json()
             console.log(json)
+            setPostStates({ ...postStates, json })
         }
     }
     const updateData = (params: any, type: string) => {
@@ -85,14 +88,41 @@ export default function ProjectStatesTable (props: any) {
         }
     };
 
-    return (
-        <MUIDataTable
-            title={"Projects"}
-            data={postStates}
-            columns={labelTableColumns(updateData, deleteData, "project")}
-            options={LabelTableOptions}
-            key={'projectStates'}
+    const getIsDeletable = (id: number) => {
+        return postStates.filter(val => val.id === id)[0].deletable;
+    }
 
-        />
+    async function createProjectState(projectState) {
+        console.log(projectState)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-state/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(projectState)
+        })
+
+        if (res.ok) {
+            const json = await res.json()
+            console.log(json)
+            setPostStates([ ...postStates, json ])
+        }
+        setOpen(false)
+    }
+
+    return (
+        <Stack direction={'column'} spacing={1}>
+            <Button variant="contained" onClick={() => setOpen(true)}>Add new</Button>
+            {<AddLabelDialog onClose={() => setOpen(false)} open={open} name={'Project state'} onSave={(value) => createProjectState(value)}/>}
+            <MUIDataTable
+                title={"Projects"}
+                data={postStates}
+                columns={labelTableColumns(updateData, deleteData, "project", getIsDeletable)}
+                options={LabelTableOptions}
+                key={'projectStates'}
+
+            />
+        </Stack>
     );
 };

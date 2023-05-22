@@ -3,6 +3,7 @@ import Link from "next/link";
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useState } from "react";
 import { channel } from "diagnostics_channel";
 import React from "react";
@@ -28,7 +29,7 @@ export default function AudiencePaper(props: any) {
     const [data, setData] = useState(props.data);
     const [channels, setChannels] = useState([]);
     const [channelsOpen, setChannelsOpen] = useState(false);
-
+   
     const handleSave = (props: any) => {
         setEditMode(false);
     }
@@ -63,7 +64,7 @@ export default function AudiencePaper(props: any) {
             }
         }
         if ((delArr.length !== 0 || addArr.length != 0) && res.ok) {
-            const copy = {...data, channels: value}
+            const copy = { ...data, channels: value }
             setData(copy)
         }
         setChannelsOpen(false);
@@ -105,6 +106,10 @@ export default function AudiencePaper(props: any) {
                         />
                     </Grid>
                     <Grid item xs={1}>
+
+                        <IconButton aria-label="delete" onClick={() => props.deleteData(data)}>
+                            <DeleteIcon color="primary" />
+                        </IconButton>
                         {
                             editMode ?
                                 <IconButton aria-label="delete" onClick={handleSave}>
@@ -122,9 +127,9 @@ export default function AudiencePaper(props: any) {
                 <Stack direction="row" spacing={1} alignItems={'center'} flexWrap={'wrap'} useFlexGap>
                     <Typography variant="body1" paddingRight={1}>Channels: </Typography>
                     {
-                        data.channels.length !== 0 ?
+                        data.channels.filter(val => !val.deleted).length !== 0 ?
 
-                            Array.from(data.channels).map((value) => (
+                            Array.from(data.channels.filter(val => !val.deleted)).map((value) => (
                                 getTypes(value, () => setChannelsOpen(true))
                             ))
                             : <Chip

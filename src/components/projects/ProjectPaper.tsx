@@ -3,16 +3,6 @@ import { Box, Button, Chip, Divider, Grid, Paper, Stack, TextField, Typography }
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-let data = {
-    name: "Tootbrush",
-    tasks: 12,
-    manager: "Manager",
-    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Mauris dolor felis, sagittis at, luctus sed, aliquam non, tellus. Etiam commodo dui eget wisi. Curabitur bibendum justo non orci. Integer lacinia. Etiam ligula pede, sagittis quis, interdum ultricies, scelerisque eu. Nulla pulvinar eleifend sem. Curabitur sagittis hendrerit ante. Nullam sit amet magna in magna gravida vehicula. Morbi scelerisque luctus velit. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. Cras elementum. Etiam sapien elit, consequat eget, tristique non, venenatis quis, ante.",
-    created: "2.2.2023",
-    deadline: "2.2.2024",
-    state: "Open",
-    category: "Hiring"
-}
 
 export default function ProjectPaper(props: any) {
     const project = props.project;
@@ -41,7 +31,7 @@ export default function ProjectPaper(props: any) {
                             </Grid>
                             <Grid item xs={11}>
                                 <Typography gutterBottom variant="h5" component="div">
-                                    {project.manager.name + " " + project.manager.surname}
+                                    {project.manager? project.manager.name + " " + project.manager.surname : ""}
                                 </Typography>
                             </Grid>
                             <Grid item xs={1}>
@@ -89,14 +79,14 @@ export default function ProjectPaper(props: any) {
                                         disableUnderline: true
                                     }}
                                     variant="standard"
-                                    defaultValue={project.projectState.name}
+                                    defaultValue={project.projectState? project.projectState.name : ""}
                                 />
                             </Grid>
                             <Grid item>
                                 <TextField
                                     id="standard-read-only-input"
                                     label="Category"
-                                    defaultValue={project.projectType.name}
+                                    defaultValue={project.projectType? project.projectType.name : ""}
                                     InputProps={{
                                         readOnly: true,
                                         disableUnderline: true

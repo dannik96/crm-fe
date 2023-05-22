@@ -1,4 +1,5 @@
 import ChannelPaper from "@/components/channels/ChannelPaper";
+import NewChannelPaper from "@/components/channels/NewChannelPaper";
 import { Grid } from "@mui/material";
 import { useRouter } from "next/router";
 import React from "react";
@@ -11,8 +12,9 @@ export default function Channels(props: any) {
 
     useEffect(() => {
         fetchChannels();
-    }, [router])
+    console.log(localStorage.getItem('token'))
 
+    }, [router])
     async function fetchChannels() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel/`, {
             headers: {
@@ -29,6 +31,7 @@ export default function Channels(props: any) {
     }
     return (
         <Grid container padding={4} spacing={3}>
+            <NewChannelPaper />
             {Array.from(channels).map((value) => (
                 <ChannelPaper key={value.id} channel={value} />
             ))}

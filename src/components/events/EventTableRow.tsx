@@ -1,10 +1,11 @@
 import { TableRow, TableCell, Grid, Stack, TextField, Box, IconButton, Divider, Typography, Chip, MenuItem, Select, SelectChangeEvent, InputLabel, FormControl } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import React from "react";
-import DatePicker from "react-datepicker";
 import Link from "next/link";
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import LabelDialog from "../customs/LabelDialog";
 import AddIcon from '@mui/icons-material/Add';
@@ -65,6 +66,9 @@ export default function EventTableRow(props: any) {
     const [projects, setProjects] = useState([]);
     const nameRef = useRef();
     const descRef = useRef();
+    let isClearable = {
+        isClearable: editMode
+    }
 
     useEffect(() => {
         fetchEvent();
@@ -251,7 +255,6 @@ export default function EventTableRow(props: any) {
                                         id="end-date"
                                         disabled={!editMode}
                                         showTimeSelect
-                                        isClearable
                                         dateFormat={"dd.MM.yyyy"}
                                     />
                                 </Stack>
@@ -267,14 +270,13 @@ export default function EventTableRow(props: any) {
                                         id="end-date"
                                         disabled={!editMode}
                                         showTimeSelect
-                                        isClearable
                                         dateFormat={"dd.MM.yyyy"}
                                     />
                                 </Stack>
                                 <Stack direction={'row'} spacing={2} mt={2} alignItems={'center'}>
                                     <Typography variant="body1">Type: </Typography>
                                     {
-                                        event.eventTypes.length !== 0 ?
+                                        event.eventTypes.filter((eventType: any) => !eventType.deleted).length !== 0 ?
                                             Array.from(event.eventTypes).map((value: any) => (
                                                 getLabels(value, handleLabelClickOpen, editMode)
                                             ))
@@ -318,7 +320,12 @@ export default function EventTableRow(props: any) {
                             </Stack>
                         </Grid>
                         <Grid item xs={1}>
-                            <Box display="flex" justifyContent="center">
+                            <Stack direction={'column'}>
+                                <IconButton aria-label="edit" onClick={() => {
+                                    props.deleteData(event)
+                                }}>
+                                    <DeleteIcon color="primary" />
+                                </IconButton>
                                 {
                                     editMode ?
                                         <IconButton aria-label="delete" onClick={handleSave}>
@@ -331,7 +338,7 @@ export default function EventTableRow(props: any) {
                                             <EditIcon color="primary" />
                                         </IconButton>
                                 }
-                            </Box>
+                            </Stack>
                         </Grid>
                     </Grid>
                     <Divider variant="middle" />

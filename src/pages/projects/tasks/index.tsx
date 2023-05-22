@@ -1,4 +1,5 @@
 import ProjectPaper from "@/components/projects/ProjectPaper";
+import NewTaskPaper from "@/components/projects/tasks/NewTaskPaper";
 import TaskPaper from "@/components/tasks/TaskPaper";
 import { Box, Grid } from "@mui/material";
 import { useRouter } from "next/router";
@@ -38,5 +39,6 @@ export default function TaskPage(props: any) {
                 ))
                 : <React.Fragment />
             }
+            <NewTaskPaper />
         </Grid>)
 }

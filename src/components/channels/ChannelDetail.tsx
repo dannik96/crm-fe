@@ -3,6 +3,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
 import React, { useRef, useState } from "react";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function getTypes(label: any, addHandler: Function) {
     const handleClick = () => {
@@ -21,8 +22,6 @@ function getTypes(label: any, addHandler: Function) {
 
 export default function ChannelDetail(props: any) {
     const channel = props.channel;
-    const [types, setTypes] = useState(props.types);
-    const [assignee, setAssignee] = useState(props.assignee);
     const [editMode, setEditMode] = useState(false);
 
     const nameRef = useRef();
@@ -86,9 +85,10 @@ export default function ChannelDetail(props: any) {
                                     variant="standard"
                                 />
                             </Stack>
-                            <Stack direction="row" spacing={1}>
+                            <Stack direction="row" spacing={1} alignItems={'center'}>
+                                <Typography variant="body1">Types: </Typography>
                                 {
-                                    channel.channelTypes.length !== 0 ?
+                                    channel.channelTypes.filter((channelType: any) => !channelType.deleted).length !== 0 ?
 
                                         Array.from(channel.channelTypes).map((value) => (
                                             getTypes(value, props.updateTypes)
@@ -112,7 +112,12 @@ export default function ChannelDetail(props: any) {
                     </Grid>
                     {props.showEditButton ?
                         <Grid item xl={1}>
-                            <Box display="flex" justifyContent="center">
+                            <Stack direction={'column'}>
+                                <IconButton aria-label="edit" onClick={() => {
+                                    props.deleteData(channel.id)
+                                }}>
+                                    <DeleteIcon color="primary" />
+                                </IconButton>
                                 {
                                     editMode ?
                                         <IconButton aria-label="delete" onClick={handleSave}>
@@ -125,7 +130,7 @@ export default function ChannelDetail(props: any) {
                                             <EditIcon color="primary" />
                                         </IconButton>
                                 }
-                            </Box>
+                            </Stack>
                         </Grid> : <React.Fragment />
                     }
                 </Grid>

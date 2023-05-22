@@ -9,8 +9,7 @@ const PostTable = (props: any) => {
             data={props.data}
             columns={props.columns}
             options={props.options}
-            key={'table'}
-            
+            key={'table'}    
         />
     );
 };

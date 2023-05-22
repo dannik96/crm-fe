@@ -1,6 +1,7 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from "@mui/material";
-export function labelTableColumns(updateData: Function, deleteData: Function, type : string) {
+import React from 'react';
+export function labelTableColumns(updateData: Function, deleteData: Function, type: string, deletable: Function) {
     return [{
         name: "id",
         label: "Id"
@@ -14,19 +15,23 @@ export function labelTableColumns(updateData: Function, deleteData: Function, ty
         label: "Description"
     },
     {
-        name: "Delete",
+        name: "",
         options: {
             filter: false,
             sort: false,
             empty: true,
             customBodyRender: (value: any, tableMeta: any, updateValue: any) => {
-                return (
-                    <IconButton aria-label="edit" onClick={(e) => {
-                        deleteData(tableMeta.rowData[0], type);
-                    }}>
-                        <DeleteIcon color="primary" />
-                    </IconButton>
-                );
+                if (deletable(tableMeta.rowData[0])) {
+                    return (
+                        <IconButton aria-label="edit" onClick={(e) => {
+                            deleteData(tableMeta.rowData[0], type);
+                        }}>
+                            <DeleteIcon color="primary" />
+                        </IconButton>
+                    );
+                } else {
+                    return (<React.Fragment />)
+                }
             }
         }
     }

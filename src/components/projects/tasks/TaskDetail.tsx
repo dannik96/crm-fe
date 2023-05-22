@@ -1,20 +1,21 @@
 import LabelData from "@/components/customs/LabelData";
-import { Paper, Box, Grid, Divider, Stack, Typography, Chip, Avatar, TextField, IconButton } from "@mui/material";
+import { Paper, Box, Grid, Divider, Stack, Typography, Chip, Avatar, TextField, IconButton, useRadioGroup } from "@mui/material";
 import Link from "next/link";
-import React from "react";
+import React, { useRef } from "react";
 import { useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DatePicker from "react-datepicker";
+
+import "react-datepicker/dist/react-datepicker.css";
 
 function getLabels(label: any, addHandler: Function, removeHandler: Function, editable: boolean) {
     const handleClick = () => {
         addHandler(label.id)
     };
 
-    const handleDelete = () => {
-        removeHandler(label.id)
-    };
     return (
         <Chip
             key={label.id}
@@ -53,14 +54,23 @@ function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Fun
 }
 
 export default function TaskDetail(props: any) {
-    const task = props.task;
-    const [labels, setLabels] = useState(task.taskLabels);
-    const [disabled, setDisabled] = useState(true);
+    const [task, setTask] = useState({ ...props.task });
 
-    const handleSave = (props: any) => {
+    const [disabled, setDisabled] = useState(true);
+    const [deadline, setDeadline] = useState(new Date(task.deadline))
+
+    const nameRef = useRef();
+    const descRef = useRef();
+
+    const handleSave = () => {
         setDisabled(true);
+        task.name = nameRef.current.value;
+        task.description = descRef.current.value;
+        task.deadline = deadline;
+        props.editTask(task);
     }
-    console.log(task.project)
+    console.log(task)
+    console.log(props.task)
     return (
         <Paper
             sx={{
@@ -69,7 +79,7 @@ export default function TaskDetail(props: any) {
                 maxWidth: '100%',
                 flexDirection: 'column',
             }}>
-            {task ?
+            {props.task ?
                 <Box sx={{ my: 3, mx: 2, mb: 3 }}>
                     <Grid container spacing={1}>
                         <Grid item xl={11}>
@@ -92,6 +102,7 @@ export default function TaskDetail(props: any) {
                                             style: { fontSize: 40, padding: 0 },
 
                                         }}
+                                        inputRef={nameRef}
                                         variant="standard"
                                         sx={{
                                             "& fieldset": { border: disabled ? 1 : 'none' },
@@ -99,12 +110,22 @@ export default function TaskDetail(props: any) {
                                             padding: 0,
                                         }}
                                     />
-                                    {
-                                        <Link href={"/projects/projects/" + task.project.id} style={{ textDecoration: 'none' }}>
-                                            <Typography variant="h6" component="div">{task.project.name}</Typography>
-                                        </Link>
-                                    }
-                                    {getUserChip(task.assignedPerson, props.removeManager, props.setManager, props.showEditButton)}
+                                    <Stack direction={'row'} spacing={1} alignItems={'center'}>
+                                        <Typography variant="body1">Project:</Typography>
+                                        {
+                                            task.project ?
+                                                <Link href={"/projects/projects/" + task.project.id} style={{ textDecoration: 'none' }}>
+                                                    <Typography variant="h6" component="div">{task.project.name}</Typography>
+                                                </Link> :
+                                                getUserChip(task.project, props.unsetProject, props.setProject, props.showEditButton)
+                                        }
+                                    </Stack>
+                                    <Stack direction={'row'} spacing={1} alignItems={'center'}>
+                                        <Typography variant="body1">Assignee:</Typography>
+                                        {
+                                            getUserChip(task.assignedPerson, props.removeManager, props.setManager, props.showEditButton)
+                                        }
+                                    </Stack>
 
 
                                 </Stack>
@@ -114,25 +135,45 @@ export default function TaskDetail(props: any) {
                                     alignItems="center"
                                     justifyContent="space-around"
                                     minWidth={150}>
-                                    <TextField
-                                        id="deadline"
-                                        label="Deadline"
-                                        defaultValue={new Date(task.deadline).toLocaleDateString()}
-                                        InputProps={{
-                                            readOnly: disabled,
-                                            disableUnderline: disabled
-                                        }}
-                                        variant="standard"
-                                    />
+                                    <Stack direction={'row'}
+                                        alignItems="center"
+                                        justifyContent="space-between"
+                                        spacing={1}>
+                                        <Typography variant="body1">
+                                            From:
+                                        </Typography>
+                                        <DatePicker
+                                            selected={deadline}
+                                            onChange={(date: Date) => setDeadline(date)}
+                                            id="start-date"
+                                            disabled={disabled}
+                                            dateFormat={"dd.MM.yyyy"}
+                                        />
+                                    </Stack>
                                     <Stack width="100%" direction={'row'} spacing={2} alignItems={'center'} justifyContent={'space-between'}>
                                         <Typography>State</Typography>
-                                        {getLabels(task.taskState, props.updateState, () => { }, props.showEditButton)}
+                                        {
+                                            !task.taskState || task.taskState.deleted ?
+                                                <Chip
+                                                    key={"plus"}
+                                                    label={
+                                                        <AddIcon style={{ color: props.showEditButton ? "white" : "#1976d2" }} />
+                                                    }
+                                                    onClick={() => props.updateState()}
+                                                    id={"plus"}
+                                                    color="primary"
+                                                    clickable={props.showEditButton}
+                                                    variant={props.showEditButton ? "filled" : "outlined"}
+                                                    style={{ minWidth: 100 }}
+                                                /> :
+                                                getLabels(task.taskState, props.updateState, () => { }, props.showEditButton)
+                                        }
                                     </Stack>
                                 </Stack>
                                 <Stack direction={"row"} spacing={1} useFlexGap flexWrap="wrap">
                                     {
-                                        labels.length !== 0 ?
-                                            Array.from(labels).map((value: any) => (
+                                        props.task.taskLabels.filter(val => !val.deleted).length !== 0 ?
+                                            Array.from(props.task.taskLabels.filter(val => !val.deleted)).map((value: any) => (
                                                 getLabels(value, props.updateLabels, () => undefined, props.showEditButton)
                                             ))
                                             : props.showEditButton ?
@@ -155,7 +196,12 @@ export default function TaskDetail(props: any) {
                         </Grid>
                         {props.showEditButton ?
                             <Grid item xl={1}>
-                                <Box display="flex" justifyContent="center">
+                                <Stack direction={'column'}>
+                                    <IconButton aria-label="edit" onClick={() => {
+                                        props.deleteData(task.id)
+                                    }}>
+                                        <DeleteIcon color="primary" />
+                                    </IconButton>
                                     {
                                         disabled ?
                                             <IconButton aria-label="delete" onClick={() => {
@@ -167,7 +213,7 @@ export default function TaskDetail(props: any) {
                                                 <SaveIcon color="primary" />
                                             </IconButton>
                                     }
-                                </Box>
+                                </Stack>
                             </Grid> : <React.Fragment />
                         }
                     </Grid>
@@ -188,6 +234,7 @@ export default function TaskDetail(props: any) {
                                 }}
                                 fullWidth
                                 multiline
+                                inputRef={descRef}
                                 variant="outlined"
                                 sx={{
                                     "& fieldset": { border: disabled ? 'none' : "1 px" },

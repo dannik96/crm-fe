@@ -15,7 +15,7 @@ export const PostTableColumns = [
         label: "Author",
         options: {
             customBodyRender: (value, tableMeta, updateValue) => {
-                return value.name + " " + value.surname
+                return value ? value.name + " " + value.surname : ""
             }
         }
     },

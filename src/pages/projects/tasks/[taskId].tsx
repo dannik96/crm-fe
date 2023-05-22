@@ -25,10 +25,12 @@ export default function TaskDetailPage(props: any) {
     const [persons, setPersons] = useState();
     const [stateOpen, setStateOpen] = useState(false);
     const [labelOpen, setLabelOpen] = useState(false);
+    const [projectOpen, setProjectOpen] = useState(false);
     const [taskStates, setTaskStates] = useState();
     const [taskLabels, setTaskLabels] = useState();
     const [managerOpen, setManagerOpen] = useState(false);
     const [posts, setPosts] = useState([]);
+    const [projects, setProjects] = useState([]);
     const [participants, setParticipants] = useState([]);
     const [comments, setComments] = useState([]);
     const router = useRouter();
@@ -54,6 +56,7 @@ export default function TaskDetailPage(props: any) {
         fetchTaskStates();
         fetchTaskLabels();
         fetchPosts();
+        fetchProjects();
     }, [router])
 
     const handleAddComment = async (props: any) => {
@@ -83,11 +86,20 @@ export default function TaskDetailPage(props: any) {
             setComments([...comments, json]);
         }
     }
+    async function fetchProjects() {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
 
-    async function fetchTaskStates() {
-        if (router.query.taskId === undefined) {
-            return;
+        if (res.ok) {
+            const json = await res.json()
+            setProjects(json)
         }
+    }
+    async function fetchTaskStates() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task-state/`, {
             headers: {
                 "Content-Type": "application/json",
@@ -187,6 +199,22 @@ export default function TaskDetailPage(props: any) {
     }
 
 
+    async function editTask(param: any) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(
+                param
+            )
+        })
+
+        if (res.ok) {
+            setTask({ ...task });
+        }
+    }
     async function handleSavePost() {
         let post = task.post;
         post.content = contRef.current.value;
@@ -239,7 +267,6 @@ export default function TaskDetailPage(props: any) {
 
         if (res.ok) {
             const json = await res.json()
-            console.log(json);
             setPosts(json)
         }
     }
@@ -278,13 +305,45 @@ export default function TaskDetailPage(props: any) {
         }
     };
 
+    const handleProjectClose = async (value: any) => {
+        setProjectOpen(false);
+        if (router.query.taskId === undefined) {
+            return;
+        }
+
+        if (value === undefined) {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/unset-project/", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+
+            if (res.ok) {
+                setTask({ ...project, PromiseRejectionEvent: value });
+            }
+            return;
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/set-project/" + value.id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            setTask({ ...task, project: value });
+        } 
+    };
+    
     const handleLabelsChange = async (value: any[]) => {
-        let addArr = [];
-        let delArr = [];
         let res: any;
+        const filteredLabels = await task.taskLabels.filter(label => !label.deleted);
         for (let i = 0; i < value.length; i++) {
-            if (!task.taskLabels.includes(value[i])) {
-                addArr.push(value[i]);
+            if (filteredLabels.filter(val => val.id === value[i].id).length === 0) {
                 res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/add-label/" + value[i].id, {
                     method: "PATCH",
                     headers: {
@@ -295,10 +354,9 @@ export default function TaskDetailPage(props: any) {
             }
         }
 
-        for (let i = 0; i < task.taskLabels.length; i++) {
-            if (!value.includes(task.taskLabels[i])) {
-                delArr.push(task.taskLabels[i]);
-                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/remove-label/" + task.taskLabels[i].id, {
+        for (let i = 0; i < filteredLabels.length; i++) {
+            if (value.filter(val => val.id !== filteredLabels[i].id).length === 0) {
+                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + task.id + "/remove-label/" + filteredLabels[i].id, {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
@@ -307,15 +365,13 @@ export default function TaskDetailPage(props: any) {
                 })
             }
         }
-        if (res.ok) {
-            setTask({
-                ...task,
-                taskLabels: value
-            })
+        if (res && res.ok) {
+            const newTask = { ...task, taskLabels: value }
+            setTask(newTask)
         }
         setLabelOpen(false);
     };
-
+    
     const handleStateChange = async (value: any) => {
         if (router.query.taskId === undefined) {
             return;
@@ -346,6 +402,24 @@ export default function TaskDetailPage(props: any) {
         setStateOpen(true);
     };
 
+    const handleProjectClickOpen = () => {
+        setProjectOpen(true);
+    };
+
+    const deleteData = async (id: any) => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + id, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            router.replace('/projects/tasks')
+        }
+    }
+
     return (
         <Grid container padding={4} spacing={3}>
             <Grid item xl={12} xs={12}>
@@ -355,6 +429,10 @@ export default function TaskDetailPage(props: any) {
                             task={task}
                             showDescription={true}
                             showEditButton={true}
+                            editTask={editTask}
+                            deleteData={deleteData}
+                            setProject={handleProjectClickOpen}
+                            unsetProject={handleProjectClose}
                             setManager={handleManagerClickOpen}
                             removeManager={handleManagerClose}
                             updateLabels={handleLabelClickOpen}
@@ -371,7 +449,7 @@ export default function TaskDetailPage(props: any) {
                         open={labelOpen}
                         onClose={() => setLabelOpen(false)}
                         onSave={(selectedValues: any) => handleLabelsChange(selectedValues)}
-                        selectedValue={task.taskLabels}
+                        selectedValue={task.taskLabels.filter(taskLabel => !taskLabel.deleted)}
                         choices={taskLabels} /> : <React.Fragment />}
                 {taskStates && task ?
                     <SimpleDialog
@@ -379,6 +457,12 @@ export default function TaskDetailPage(props: any) {
                         onClose={() => setStateOpen(false)}
                         onItemClick={handleStateChange}
                         choices={taskStates} /> : <React.Fragment />}
+                {projects && task ?
+                    <SimpleDialog
+                        open={projectOpen}
+                        onClose={() => setProjectOpen(false)}
+                        onItemClick={handleProjectClose}
+                        choices={projects} /> : <React.Fragment />}
             </Grid>
             <Grid item xl={4}>
                 <Paper style={{ height: 500, width: '100%' }}>
