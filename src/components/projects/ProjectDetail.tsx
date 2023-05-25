@@ -72,6 +72,22 @@ export default function ProjectDetail(props: any) {
         props.editProject(project);
     }
 
+    function toHHMMSS(sec_num: number) {
+        var hours = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+    
+        var finalHours;
+        var finalMinutes;
+        var finalSeconds;
+    
+    
+        if (hours < 10) { finalHours = "0" + hours; }
+        if (minutes < 10) { finalMinutes = "0" + minutes; }
+        if (seconds < 10) { finalSeconds = "0" + seconds; }
+        return finalHours + ':' + finalMinutes + ':' + finalSeconds;
+    }
+
     return (
         <Paper
             sx={{
@@ -208,7 +224,7 @@ export default function ProjectDetail(props: any) {
 
                             </Stack>
                         </Stack>
-                        <Stack direction={'row'} spacing={1} alignItems="center">
+                        <Stack direction={'row'} spacing={1} alignItems="center" mb={2} mt={1}>
                             <Typography variant="body1">Channels:</Typography>
                             {project.channels.filter(val => !val.deleted).length === 0 ?
                                 props.showEditButton ?
@@ -230,6 +246,10 @@ export default function ProjectDetail(props: any) {
                                     getLabels(value, props.setChannels, !disabled)
                                 ))
                             }
+                        </Stack>
+                        <Stack direction={'row'} spacing={1} alignItems="center">
+                            <Typography variant="body1">Time spent:</Typography>
+                            <Typography variant="body1">{toHHMMSS(props.timeSpent)}</Typography>
                         </Stack>
                     </Grid>
                     {props.showEditButton ?

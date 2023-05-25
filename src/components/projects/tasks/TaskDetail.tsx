@@ -68,8 +68,7 @@ export default function TaskDetail(props: any) {
         task.deadline = deadline;
         props.editTask(task);
     }
-    console.log(task)
-    console.log(props.task)
+    
     return (
         <Paper
             sx={{

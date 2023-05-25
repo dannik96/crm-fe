@@ -5,17 +5,16 @@ import TabPanel from "@/components/customs/TabPanel";
 import TaskComment from "@/components/projects/tasks/TaskComment";
 import TaskDetail from "@/components/projects/tasks/TaskDetail";
 import { TaskParticipantsColumns } from "@/data/headers/TaskParticipants";
-import { TaskPostsColumns } from "@/data/headers/TaskPosts";
 import { TaskSpentsColumns } from "@/data/headers/TaskSpents";
-import { Box, Button, Checkbox, Dialog, DialogTitle, Divider, FormControl, FormControlLabel, FormGroup, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Box, Button, Divider, FormGroup, Grid, IconButton, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import { Padding } from "@mui/icons-material";
 import { getData } from "@/util/communicationUtil";
+import AddTimeDialog from "@/components/customs/AddTimeDialog";
 
 
 export default function TaskDetailPage(props: any) {
@@ -26,11 +25,13 @@ export default function TaskDetailPage(props: any) {
     const [persons, setPersons] = useState();
     const [stateOpen, setStateOpen] = useState(false);
     const [labelOpen, setLabelOpen] = useState(false);
+    const [postOpen, setPostOpen] = useState(false);
     const [projectOpen, setProjectOpen] = useState(false);
     const [taskStates, setTaskStates] = useState();
     const [taskLabels, setTaskLabels] = useState();
     const [managerOpen, setManagerOpen] = useState(false);
-    const [posts, setTasks] = useState([]);
+    const [spentTimeOpen, setSpentTimeOpen] = useState(false);
+    const [posts, setPosts] = useState([]);
     const [projects, setProjects] = useState([]);
     const [participants, setParticipants] = useState([]);
     const [comments, setComments] = useState([]);
@@ -57,7 +58,7 @@ export default function TaskDetailPage(props: any) {
         getData(setComments, router, "/api/task/" + router.query.taskId + "/comments");
         getData(setTaskStates, router, "/api/task-state/");
         getData(setTaskLabels, router, "/api/task-label/");
-        getData(setTasks, router, "/api/task/" + router.query.taskId + "/project-post-by-channel");
+        getData(setPosts, router, "/api/task/" + router.query.taskId + "/project-post-by-channel");
         getData(setProjects, router, "/api/project/");
 
         // TODO - need to add to DB and model
@@ -249,6 +250,60 @@ export default function TaskDetailPage(props: any) {
         setStateOpen(false);
     };
 
+
+    const handleAddTimeSpent = async (time, date) => {
+        if (router.query.taskId === undefined || !localStorage.getItem('id')) {
+            return;
+        }
+
+        const parts = time.split(/h|m/);
+
+        const hours = parts[0] ? parseInt(parts[0]) : 0;
+        const minutes = parts[1] ? parseInt(parts[1]) : 0;
+
+        const total = hours * 60 + minutes;
+
+        const data = {
+            date: date,
+            time: total,
+            userId: localStorage.getItem('id'),
+            task: task
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/time-spent/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(data)
+        })
+
+        if (res.ok) {
+            const json = await res.json();
+            setSpentTime([...spentTime, json])
+        }
+        setSpentTimeOpen(false);
+    };
+
+    const handleAssignPost = async (value: any) => {
+        if (router.query.taskId === undefined) {
+            return;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + router.query.taskId + "/add-post/" + value.id, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            setTask({ ...task, post: value })
+        }
+        setPostOpen(false);
+    };
+
     const handleManagerClickOpen = () => {
         setManagerOpen(true);
     };
@@ -324,7 +379,7 @@ export default function TaskDetailPage(props: any) {
                         choices={projects} /> : <React.Fragment />}
             </Grid>
             <Grid item xl={4}>
-                <Paper style={{ height: 500, width: '100%' }}>
+                <Paper style={{ height: 550, width: '100%' }}>
                     <Box display="flex" width="100%" sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <Tabs
                             value={value}
@@ -335,19 +390,31 @@ export default function TaskDetailPage(props: any) {
                         >
                             <Tab label="Time spents" />
                             <Tab label="Posts" />
-                            <Tab label="Participants" />
+                            {/* <Tab label="Participants" /> */}
                         </Tabs>
                     </Box>
                     <TabPanel value={value} index={0}>
                         <Box height={460} padding={2}>
                             <CustomTable columns={TaskSpentsColumns} rows={spentTime} />
                         </Box>
+                        <Grid container>
+                            <Grid item xl={12} mx={2}>
+                                <Button fullWidth color="primary" variant="contained" onClick={() => setSpentTimeOpen(true)}>
+                                    Add time
+                                </Button>
+                                {spentTime && task ?
+                                    <AddTimeDialog
+                                        open={spentTimeOpen}
+                                        onClose={() => setSpentTimeOpen(false)}
+                                        onSave={(time, date) => handleAddTimeSpent(time, date)} /> : <React.Fragment />}
+                            </Grid>
+                        </Grid>
                     </TabPanel>
-                    <TabPanel value={value} index={2}>
+                    {/* <TabPanel value={value} index={2}>
                         <Box height={460} padding={2}>
                             <CustomTable columns={TaskParticipantsColumns} rows={[]} />
                         </Box>
-                    </TabPanel>
+                    </TabPanel> */}
                     <TabPanel value={value} index={1}>
                         {
                             task && task.post ?
@@ -381,7 +448,6 @@ export default function TaskDetailPage(props: any) {
                                                     </IconButton>
                                             }
                                         </Box>
-                                        : <React.Fragment />
                                     </Stack>
                                     <Stack direction={'row'}
                                         alignItems="center"
@@ -424,15 +490,22 @@ export default function TaskDetailPage(props: any) {
                                     />
                                 </Stack> :
                                 <Stack alignItems={'center'} justifyContent={'center'} height={400} width={'100%'}>
-                                    <Button variant="contained">
+                                    <Button variant="contained" onClick={() => setPostOpen(true)}>
                                         Assign post
                                     </Button>
+                                    {posts ?
+                                        <SimpleDialog
+                                            open={postOpen}
+                                            onClose={() => setPostOpen(false)}
+                                            onItemClick={handleAssignPost}
+                                            choices={posts} /> : <React.Fragment />}
                                 </Stack>
+
                         }
                     </TabPanel>
                 </Paper>
             </Grid>
-            <Grid item xl={8} padding={4}>
+            <Grid item xl={8}>
                 <Paper sx={{ padding: 3, height: 500, width: '100%', overflow: 'auto' }}>
                     <Stack
                         direction="row"

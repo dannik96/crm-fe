@@ -18,8 +18,8 @@ function DetailPage() {
         if (router.query.projectId === undefined) {
             return;
         }
-        getData(setProject, router, "/api/project" + router.query.projectId)
-        getData(setTasks, router, "/api/project" + router.query.projectId + "/tasks")
+        getData(setProject, router, "/api/project/" + router.query.projectId)
+        getData(setTasks, router, "/api/project/" + router.query.projectId + "/tasks")
     }, [router])
 
     function modifyTasks(tasks: any[]) {
@@ -36,7 +36,7 @@ function DetailPage() {
         
         return modifiedList;
     }
-
+    console.log(tasks)
     const TaskTableOptions = {
         filter: true,
         selectableRows: "none",

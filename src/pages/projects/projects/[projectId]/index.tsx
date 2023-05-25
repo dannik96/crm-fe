@@ -1,12 +1,16 @@
 import LabelData from '@/components/customs/LabelData';
 import Stats from '@/components/projects/Stats';
-import { Avatar, Dialog, DialogTitle, Grid, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper } from '@mui/material';
+import { Avatar, Box, Dialog, DialogTitle, Divider, Grid, Link, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import ProjectDetail from '@/components/projects/ProjectDetail';
 import { blue } from '@mui/material/colors';
 import LabelDialog from '@/components/customs/LabelDialog';
 import { getData } from '@/util/communicationUtil';
+import CustomTable from '@/components/customs/CustomTable';
+import { ProjectEvents as ProjectEventsColumns } from '@/data/headers/ProjectEvents';
+import { AudiencesColumns } from '@/data/headers/Audiences';
+import { ChannelsColumns } from '@/data/headers/Channels';
 
 function DetailPage(props: any) {
     const [stateOpen, setStateOpen] = useState(false);
@@ -17,7 +21,7 @@ function DetailPage(props: any) {
     const [projectTypes, setProjectTypes] = useState();
     const [persons, setPersons] = useState([]);
     const [channels, setChannels] = useState([]);
-    const [participants, setParticipants] = useState([]);
+    const [timeSpent, setTimeSpent] = useState([]);
     const [project, setProject] = useState();
     const [projectTasks, setProjectTasks] = useState([]);
     const [projectEvents, setProjectEvents] = useState([]);
@@ -34,9 +38,27 @@ function DetailPage(props: any) {
         getData(setChannels, router, "/api/channel/");
         getData(setPersons, router, "/api/person/");
         getData(setProjectTasks, router, "/api/project/" + router.query.projectId + "/tasks");
+        getData(setProjectEvents, router, "/api/event/get-by-project/" + router.query.projectId);
+        //getData(setTimeSpent, router, "/api/project/" + router.query.projectId + "/time-spent/");
         //fetchProjectParticipants();
-        //fetchProjectTimeSpent();
+
+        fetchProjectTimeSpent();
     }, [router])
+    
+    const fetchProjectTimeSpent = async () => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId + "/time-spent/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+
+        if (res.ok) {
+            const json = await res.json();
+            setTimeSpent(json);
+        }
+    };
 
     const handleStateClose = async (value: any) => {
         setStateOpen(false);
@@ -209,6 +231,7 @@ function DetailPage(props: any) {
                         setManager={handleManagerClickOpen}
                         removeManager={handleManagerClose}
                         deleteData={deleteData}
+                        timeSpent={timeSpent}
                         showDescription={true}
                         showEditButton={true} />
                     {projectStates ?
@@ -252,8 +275,46 @@ function DetailPage(props: any) {
                 </Paper>
             </Grid>
 
+            <Grid item xl={5}>
+                <Paper sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}>
+                    <Box height={460}>
+                        <Box sx={{ my: 3, mx: 2, mb: 3 }}>
+                            <Typography variant="h4">
+                                Events
+                            </Typography>
+                        </Box>
+                        <Divider variant="middle" />
+                        <CustomTable columns={ProjectEventsColumns} rows={projectEvents} />
+                    </Box>
+                </Paper>
+            </Grid>
 
-        </Grid>);
+
+            <Grid item xl={4}>
+                <Paper sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}>
+                    {project ?
+                        <Box height={460}>
+                            <Box sx={{ my: 3, mx: 2, mb: 3 }}>
+                                <Typography variant="h4">
+                                    Channels
+                                </Typography>
+                            </Box>
+                            <Divider variant="middle" />
+                            <CustomTable columns={ChannelsColumns} rows={project.channels} />
+                        </Box> : <React.Fragment />
+                    }
+                </Paper>
+            </Grid>
+
+        </Grid >);
 }
 
 function SimpleDialog(props: any) {
