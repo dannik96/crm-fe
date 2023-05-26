@@ -71,25 +71,11 @@ export default function UserTableRow(props: any) {
     const phoneRef = useRef();
 
     const router = useRouter();
-
+    
     useEffect(() => {
         getData(setUser, router, "/api/user/" + props.rowData[0]);
-        getData(setFetchedRoles, router, "/api/user/user-roles" + props.rowData[0]);
+        getData(setFetchedRoles, router, "/api/user/user-roles");
     }, [])
-
-    async function fetchUserRoles() {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/user-roles`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        })
-
-        if (res.ok) {
-            const json = await res.json()
-            setFetchedRoles(json)
-        }
-    }
 
     const handleRoleClickOpen = () => {
         if (editMode)
@@ -244,11 +230,11 @@ export default function UserTableRow(props: any) {
 
                         <Grid item xs={1}>
                             <Stack direction={'column'}>
-                                <Button variant={'contained'} color="error" aria-label="deactivate" onClick={() => {
+                                {/* <Button variant={'contained'} color="error" aria-label="deactivate" onClick={() => {
                                     props.deleteData(user)
                                 }}>
                                     Deactivate
-                                </Button>
+                                </Button> */}
                                 {
                                     editMode ?
                                         <IconButton aria-label="delete" onClick={handleSave}>

@@ -128,6 +128,8 @@ export default function NewAudiencePaper(props: any) {
                 }}
             >
                 <Stack spacing={2} m={2}>
+                    <Typography variant="h4">New audience</Typography>
+
                     <Stack direction={'row'} justifyContent={'space-between'}>
                         <Stack direction={'row'} spacing={2} alignItems={'center'}>
                             <Typography variant="body1">Name:</Typography>
@@ -142,7 +144,7 @@ export default function NewAudiencePaper(props: any) {
                             <SaveIcon color="primary" />
                         </IconButton>
                     </Stack>
-                    
+
                     <Stack direction={"row"} spacing={1} alignItems={'center'} useFlexGap flexWrap="wrap">
                         <Typography>
                             Channels:
@@ -167,7 +169,7 @@ export default function NewAudiencePaper(props: any) {
             {fetchedChannels.length ?
                 <LabelDialog
                     open={channelOpen}
-                    onSave={(selecedValues : any[]) => handleChannelClose(selecedValues)}
+                    onSave={(selecedValues: any[]) => handleChannelClose(selecedValues)}
                     selectedValue={channels}
                     onClose={() => setChannelOpen(false)}
                     choices={fetchedChannels} /> : <React.Fragment />}

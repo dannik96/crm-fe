@@ -142,6 +142,8 @@ export default function NewChannelPaper(props: any) {
                 }}
             >
                 <Stack spacing={2} m={2}>
+                    <Typography variant="h4">New channel</Typography>
+
                     <Stack direction={'row'} justifyContent={'space-between'}>
                         <Stack direction={'row'} spacing={2} alignItems={'center'}>
                             <Typography variant="body1">Name:</Typography>
@@ -165,7 +167,7 @@ export default function NewChannelPaper(props: any) {
                             inputRef={locRef}>
                         </TextField>
                     </Stack>
-                    <Stack direction={"row"} spacing={2} alignItems={'center'}>
+                    <Stack direction={"row"} spacing={2} alignItems={'center'} flexWrap={'wrap'} useFlexGap>
                         <Typography>
                             Audiences:
                         </Typography>
@@ -197,7 +199,7 @@ export default function NewChannelPaper(props: any) {
             {fetchedAudiences.length ?
                 <LabelDialog
                     open={audienceOpen}
-                    onSave={(selecedValues : any[]) => handleAudienceClose(selecedValues)}
+                    onSave={(selecedValues: any[]) => handleAudienceClose(selecedValues)}
                     selectedValue={audiences}
                     onClose={() => setAudienceOpen(false)}
                     choices={fetchedAudiences} /> : <React.Fragment />}

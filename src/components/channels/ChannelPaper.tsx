@@ -22,9 +22,6 @@ export default function ChannelPaper(props: any) {
                                     {channel.name}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={1}>
-                                <EditIcon color="primary" />
-                            </Grid>
                             <Grid item xs={9}>
                                 <TextField
                                     id="location"

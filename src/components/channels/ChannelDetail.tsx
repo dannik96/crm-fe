@@ -5,15 +5,18 @@ import AddIcon from '@mui/icons-material/Add';
 import React, { useRef, useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
 
-function getTypes(label: any, addHandler: Function) {
+function getTypes(label: any, addHandler: Function, editable: booelan) {
     const handleClick = () => {
-        addHandler()
+        if (editable)
+            addHandler()
     };
 
     return (
         <Chip
             label={label.name}
             onClick={handleClick}
+            clickable={editable}
+            variant={editable ? "filled" : "outlined"}
             color="primary"
             id={label.id}
             key={label.id}
@@ -89,7 +92,7 @@ export default function ChannelDetail(props: any) {
                                     channel.channelTypes.filter((channelType: any) => !channelType.deleted).length !== 0 ?
 
                                         Array.from(channel.channelTypes).map((value) => (
-                                            getTypes(value, props.updateTypes)
+                                            getTypes(value, props.updateTypes, editMode)
                                         ))
                                         : <Chip
                                             key={"plus"}

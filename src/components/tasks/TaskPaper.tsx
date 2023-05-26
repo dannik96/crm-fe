@@ -17,15 +17,10 @@ export default function TaskPaper(props: any) {
                 >
                     <Box sx={{ my: 3, mx: 2, mb: 1 }}>
                         <Grid container alignItems="baseline" columnSpacing={2}>
-                            <Grid item xs={11}>
+                            <Grid item xs={12}>
                                 <Typography gutterBottom variant="h3" component="div">
                                     {task.name}
                                 </Typography>
-                            </Grid>
-                            <Grid item xs={1}>
-                                <Icon>
-                                    <VisibilityIcon color="primary" />
-                                </Icon>
                             </Grid>
                             <Grid item xs={11}>
                                 <Typography gutterBottom variant="h5" component="div">

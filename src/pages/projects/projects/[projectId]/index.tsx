@@ -1,16 +1,13 @@
 import LabelData from '@/components/customs/LabelData';
 import Stats from '@/components/projects/Stats';
-import { Avatar, Box, Dialog, DialogTitle, Divider, Grid, Link, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper, Typography } from '@mui/material';
+import { Box, Dialog, DialogTitle, Divider, Grid, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Paper, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import ProjectDetail from '@/components/projects/ProjectDetail';
-import { blue } from '@mui/material/colors';
 import LabelDialog from '@/components/customs/LabelDialog';
 import { getData } from '@/util/communicationUtil';
 import CustomTable from '@/components/customs/CustomTable';
 import { ProjectEvents as ProjectEventsColumns } from '@/data/headers/ProjectEvents';
-import { AudiencesColumns } from '@/data/headers/Audiences';
-import { ChannelsColumns } from '@/data/headers/Channels';
 
 function DetailPage(props: any) {
     const [stateOpen, setStateOpen] = useState(false);
@@ -44,7 +41,7 @@ function DetailPage(props: any) {
 
         fetchProjectTimeSpent();
     }, [router])
-    
+
     const fetchProjectTimeSpent = async () => {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + router.query.projectId + "/time-spent/", {
             method: "GET",
@@ -166,6 +163,7 @@ function DetailPage(props: any) {
     };
 
     const handleChannelClickOpen = () => {
+        console.log("asdasda")
         setChannelOpen(true);
     };
 
@@ -183,9 +181,17 @@ function DetailPage(props: any) {
         } else {
         }
     }
+
+    function getArraySupplement(array1, array2) {
+        const array2Values = new Set(array2);
+        const supplement = array1.filter(obj => !array2Values.has(obj));
+        return supplement;
+    }
+
     const handleLabelsChange = async (value: any[]) => {
         let res: any;
         const filteredChannels = project.channels.filter(val => !val.deleted);
+        const supplement = getArraySupplement(filteredChannels, value);
         for (let i = 0; i < value.length; i++) {
             if (filteredChannels.filter(val => val.id === value[i].id).length === 0) {
                 res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + project.id + "/add-channel/" + value[i].id, {
@@ -198,16 +204,14 @@ function DetailPage(props: any) {
             }
         }
 
-        for (let i = 0; i < filteredChannels.length; i++) {
-            if (value.filter(val => val.id !== filteredChannels[i].id).length === 0) {
-                res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + project.id + "/remove-channel/" + filteredChannels[i].id, {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + localStorage.getItem("token")
-                    }
-                })
-            }
+        for (let i = 0; i < supplement.length; i++) {
+            res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + project.id + "/remove-channel/" + filteredChannels[i].id, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
         }
         if (res && res.ok) {
             const newProject = { ...project, channels: value }
@@ -275,7 +279,7 @@ function DetailPage(props: any) {
                 </Paper>
             </Grid>
 
-            <Grid item xl={5}>
+            <Grid item xl={7}>
                 <Paper sx={{
                     p: 2,
                     display: 'flex',
@@ -290,27 +294,6 @@ function DetailPage(props: any) {
                         <Divider variant="middle" />
                         <CustomTable columns={ProjectEventsColumns} rows={projectEvents} />
                     </Box>
-                </Paper>
-            </Grid>
-
-
-            <Grid item xl={4}>
-                <Paper sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                }}>
-                    {project ?
-                        <Box height={460}>
-                            <Box sx={{ my: 3, mx: 2, mb: 3 }}>
-                                <Typography variant="h4">
-                                    Channels
-                                </Typography>
-                            </Box>
-                            <Divider variant="middle" />
-                            <CustomTable columns={ChannelsColumns} rows={project.channels} />
-                        </Box> : <React.Fragment />
-                    }
                 </Paper>
             </Grid>
 

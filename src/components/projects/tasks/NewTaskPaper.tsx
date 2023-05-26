@@ -67,24 +67,16 @@ export default function NewTaskPaper(props: any) {
 
     useEffect(() => {
         getData(setPersons, router, "/api/person");
-        getData(setLabels, router, "/api/task-label");
-        getData(setPersons, router, "/api/project");
+        getData(setFetchedLabels, router, "/api/task-label");
+        getData(setProjects, router, "/api/project");
     }, [])
 
     const saveData = async () => {
         const createdProject = await createTask();
-        if (assignee)
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + createdProject.id + "/set-manager/" + assignee.id, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-
-        for (let index = 0; index < labels.length; index++) {
-            const element = labels[index];
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + createdProject.id + "/add-channel/" + element.id, {
+        console.log(createdProject.id);
+        if (assignee) {
+            console.log(assignee)
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + createdProject.id + "/assignee/" + assignee.id, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -92,7 +84,19 @@ export default function NewTaskPaper(props: any) {
                 }
             })
         }
-        router.reload();
+        console.log(labels)
+        for (let index = 0; index < labels.length; index++) {
+            const element = labels[index];
+            console.log(element)
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task/` + createdProject.id + "/add-label/" + element.id, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+        }
+        //router.reload();
     }
 
     const createTask = async () => {
@@ -100,6 +104,9 @@ export default function NewTaskPaper(props: any) {
         newTask.name = nameRef.current.value;
         newTask.description = descRef.current.value;
         newTask.deadline = to;
+        newTask.project = project;
+        newTask.taskLabels = labels;
+        newTask.assignedPerson = assignee;
         const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/task`, {
             method: "POST",
             headers: {
@@ -111,12 +118,13 @@ export default function NewTaskPaper(props: any) {
         let createdProject;
         if (per.ok) {
             createdProject = await per.json();
+            console.log(createdProject)
             return createdProject;
         } else {
             return undefined;
         }
     }
-    
+
     const handleManagerClose = (param: any) => {
         setAssignee(param);
         setAssigneeOpen(false);
@@ -142,6 +150,7 @@ export default function NewTaskPaper(props: any) {
                 }}
             >
                 <Stack spacing={2} m={2}>
+                    <Typography variant="h4">New task</Typography>
                     <Stack direction={'row'} justifyContent={'space-between'}>
                         <Stack direction={'row'} spacing={2} alignItems={'center'}>
                             <Typography variant="body1">Name:</Typography>

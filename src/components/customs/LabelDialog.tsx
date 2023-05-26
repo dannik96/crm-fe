@@ -14,7 +14,6 @@ export default function LabelDialog(props: any) {
 
     return (
         <Dialog onClose={onClose} open={open}>
-            <DialogTitle>Set backup account</DialogTitle>
             <DialogContent>
                 <FormGroup sx={{ pt: 0 }}>
                     {choices.map((choice: any) => (

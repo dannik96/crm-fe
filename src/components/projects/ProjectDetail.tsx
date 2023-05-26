@@ -28,7 +28,7 @@ function getLabels(label: any, changeHandler: Function, showEditButton: boolean)
 }
 
 function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Function, showEditButton: boolean) {
- 
+
     const handleDeleteAssignee = () => {
         unnassigneHandler(undefined);
     }
@@ -37,7 +37,7 @@ function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Fun
         if (showEditButton)
             changeAssignee()
     }
-    
+
     return (
         <Chip
             style={{ minWidth: 100 }}
@@ -62,7 +62,6 @@ export default function ProjectDetail(props: any) {
 
     const nameRef = useRef();
     const descRef = useRef();
-
     const handleSave = () => {
         setDisabled(true);
         project.name = nameRef.current.value;
@@ -76,12 +75,12 @@ export default function ProjectDetail(props: any) {
         var hours = Math.floor(sec_num / 3600);
         var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
         var seconds = sec_num - (hours * 3600) - (minutes * 60);
-    
+
         var finalHours;
         var finalMinutes;
         var finalSeconds;
-    
-    
+
+
         if (hours < 10) { finalHours = "0" + hours; }
         if (minutes < 10) { finalMinutes = "0" + minutes; }
         if (seconds < 10) { finalSeconds = "0" + seconds; }
@@ -130,7 +129,7 @@ export default function ProjectDetail(props: any) {
                                 <Stack direction={'row'} spacing={1} alignItems={'center'}>
                                     <Typography variant="body1">Manager:</Typography>
                                     {
-                                        !project.manager.deleted ?
+                                        !project.manager || !project.manager.deleted ?
                                             getUserChip(project.manager, props.removeManager, props.setManager, !disabled) :
                                             getUserChip(undefined, props.removeManager, props.setManager, !disabled)
                                     }
@@ -211,11 +210,14 @@ export default function ProjectDetail(props: any) {
                                                     <AddIcon style={{ color: "white" }} />
                                                 }
 
-                                                onClick={props.setCategory}
+                                                onClick={() => {
+                                                    if (!disabled)
+                                                        props.setCategory()
+                                                }}
                                                 id={"plus"}
                                                 color="primary"
-                                                clickable={props.showEditButton}
-                                                variant={props.showEditButton ? "filled" : "outlined"}
+                                                clickable={!disabled}
+                                                variant={!disabled ? "filled" : "outlined"}
                                                 style={{ minWidth: 100 }}
                                             /> : <React.Fragment />
                                         :
@@ -233,12 +235,13 @@ export default function ProjectDetail(props: any) {
                                         label={
                                             <AddIcon style={{ color: "white" }} />
                                         }
-
-                                        onClick={props.setCategory}
+                                        onClick={() => {
+                                            if (!disabled) props.setChannels()
+                                        }}
                                         id={"plus"}
                                         color="primary"
-                                        clickable={props.showEditButton}
-                                        variant={props.showEditButton ? "filled" : "outlined"}
+                                        clickable={!disabled}
+                                        variant={!disabled ? "filled" : "outlined"}
                                         style={{ minWidth: 100 }}
                                     /> : <React.Fragment />
                                 :

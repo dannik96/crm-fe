@@ -16,14 +16,9 @@ export default function ProjectPaper(props: any) {
                 >
                     <Box sx={{ my: 3, mx: 2, mb: 1 }}>
                         <Grid container alignItems="center" columnSpacing={2}>
-                            <Grid item xs={11}>
+                            <Grid item xs={12}>
                                 <Typography gutterBottom variant="h3" component="div">
                                     {project.name}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={1}>
-                                <Typography gutterBottom variant="h6" component="div">
-                                    !!
                                 </Typography>
                             </Grid>
                             <Grid item xs={11}>
@@ -45,7 +40,7 @@ export default function ProjectPaper(props: any) {
                                 <TextField
                                     id="standard-read-only-input"
                                     label="Start date"
-                                    defaultValue={new Date(project.created).toLocaleDateString("cs-CS")}
+                                    defaultValue={new Date(project.start).toLocaleDateString("cs-CS")}
                                     InputProps={{
                                         readOnly: true,
                                         disableUnderline: true

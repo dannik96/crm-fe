@@ -9,6 +9,7 @@ export default function CustomTable(props: any) {
     const handleClickOpen = (props: any) => {
         //router.push("/projects/tasks/" + props.id)
     };
+
     return (
         <DataGrid
             rows={props.rows}

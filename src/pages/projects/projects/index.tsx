@@ -14,10 +14,10 @@ function Projects() {
 
     return (
         <Grid container padding={4} spacing={3}>
+            <NewProjectPaper></NewProjectPaper>
             {projects.map(project =>
                 <ProjectPaper key={project.id} project={project}></ProjectPaper>
             )}
-            <NewProjectPaper></NewProjectPaper>
         </Grid>
     )
 }

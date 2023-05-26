@@ -69,13 +69,11 @@ export default function NewProjectPaper(props: any) {
     useEffect(() => {
         getData(setPersons, router, "/api/person");
         getData(setLabels, router, "/api/project-type");
-        getData(setChannels, router, "/api/channel");
+        getData(setFetchedChannels, router, "/api/channel");
     }, [])
 
     const saveData = async () => {
-        console.log("create")
         const createdProject = await createProject();
-        console.log(createdProject)
         if (manager)
             await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project/` + createdProject.id + "/set-manager/" + manager.id, {
                 method: "PATCH",
@@ -111,8 +109,12 @@ export default function NewProjectPaper(props: any) {
         const newProject = {};
         newProject.name = nameRef.current.value;
         newProject.description = descRef.current.value;
+        console.log(from)
         newProject.start = from;
         newProject.deadline = to;
+        newProject.channels = channels;
+        newProject.manager = manager;
+        newProject.projectType = label;
         console.log(newProject)
         const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project`, {
             method: "POST",
@@ -129,47 +131,6 @@ export default function NewProjectPaper(props: any) {
         } else {
             console.log("nok");
             return undefined;
-        }
-    }
-    const fetchPersons = async () => {
-        const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/person`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (per.ok) {
-            const res = await per.json();
-            setPersons(res)
-        }
-    }
-
-    const fetchLabels = async () => {
-        const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/project-type`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (per.ok) {
-            const res = await per.json();
-            setLabels(res)
-        }
-    }
-
-    const fetchChannels = async () => {
-        const per = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channel`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        })
-
-        if (per.ok) {
-            const res = await per.json();
-            setFetchedChannels(res)
         }
     }
 
@@ -198,6 +159,7 @@ export default function NewProjectPaper(props: any) {
                 }}
             >
                 <Stack spacing={2} m={2}>
+                    <Typography variant="h4">New project</Typography>
                     <Stack direction={'row'} justifyContent={'space-between'}>
                         <Stack direction={'row'} spacing={2} alignItems={'center'}>
                             <Typography variant="body1">Name:</Typography>

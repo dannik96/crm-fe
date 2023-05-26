@@ -79,7 +79,7 @@ export default function TaskDetailPage(props: any) {
             body: JSON.stringify({
                 "text": commentRef.current.value,
                 "person": {
-                    "id": 5
+                    "id": localStorage.getItem('id')
                 },
                 "task": {
                     "id": router.query.taskId
@@ -89,7 +89,9 @@ export default function TaskDetailPage(props: any) {
 
         if (res.ok) {
             const json = await res.json()
+            console.log(json)
             setComments([...comments, json]);
+            console.log(comments)
         }
     }
 
@@ -147,7 +149,7 @@ export default function TaskDetailPage(props: any) {
             })
 
             if (res.ok) {
-                setTask({ ...project, assignedPerson: value });
+                setTask({ ...task, assignedPerson: value });
             }
             return;
         }
@@ -161,7 +163,12 @@ export default function TaskDetailPage(props: any) {
         })
 
         if (res.ok) {
-            setTask({ ...task, assignedPerson: value });
+            console.log(task)
+            console.log(value)
+            const newTask = {...task, assignedPerson : value};
+            setTask(newTask);
+            console.log(task)
+            console.log(newTask)
         }
     };
 
@@ -245,6 +252,8 @@ export default function TaskDetailPage(props: any) {
         })
 
         if (res.ok) {
+            console.log(task.taskState);
+            console.log(value);
             setTask({ ...task, taskState: value })
         }
         setStateOpen(false);
@@ -417,7 +426,7 @@ export default function TaskDetailPage(props: any) {
                     </TabPanel> */}
                     <TabPanel value={value} index={1}>
                         {
-                            task && task.post ?
+                            task && task.post && !task.post.deleted ?
                                 <Stack height={460} padding={2} spacing={3}>
                                     <Stack direction={'row'} spacing={1} alignItems={'baseline'}>
                                         <TextField
@@ -539,7 +548,7 @@ export default function TaskDetailPage(props: any) {
                             </Box>
                             <Grid container justifyContent="flex-end" paddingBottom={5}>
                                 <Button variant="contained"
-                                    onClick={handleAddComment}>Contained</Button>
+                                    onClick={handleAddComment}>Add comment</Button>
                             </Grid>
                         </FormGroup>
                     </Box>

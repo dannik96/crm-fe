@@ -12,7 +12,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 function getLabels(label: any, addHandler: Function, removeHandler: Function, editable: boolean) {
     const handleClick = () => {
-        addHandler(label.id)
+        if (!editable)
+            addHandler(label.id)
     };
 
     return (
@@ -22,8 +23,8 @@ function getLabels(label: any, addHandler: Function, removeHandler: Function, ed
             onClick={handleClick}
             id={label.id}
             color="primary"
-            clickable={editable}
-            variant={editable ? "filled" : "outlined"}
+            clickable={!editable}
+            variant={!editable ? "filled" : "outlined"}
             style={{ minWidth: 100 }}
         />);
 }
@@ -35,7 +36,8 @@ function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Fun
     }
 
     const handleClick = () => {
-        changeAssignee()
+        if (!disabled)
+            changeAssignee()
     }
 
     return (
@@ -43,11 +45,11 @@ function getUserChip(user: any, unnassigneHandler: Function, changeAssignee: Fun
             style={{ minWidth: 100 }}
             id={user ? user.id : -1}
             label={user ? <Typography minWidth={50}>{user.name + " " + user.surname}</Typography> : <Typography minWidth={50}></Typography>}
-            variant={disabled ? "filled" : "outlined"}
+            variant={!disabled ? "filled" : "outlined"}
             color="primary"
             onClick={handleClick}
-            onDelete={disabled ? handleDeleteAssignee : undefined}
-            clickable={disabled}
+            onDelete={!disabled ? handleDeleteAssignee : undefined}
+            clickable={!disabled}
             avatar={<Avatar>{user ? user.name.charAt(0) : ""}</Avatar>} />
     )
 }
@@ -68,7 +70,7 @@ export default function TaskDetail(props: any) {
         task.deadline = deadline;
         props.editTask(task);
     }
-    
+
     return (
         <Paper
             sx={{
@@ -115,13 +117,13 @@ export default function TaskDetail(props: any) {
                                                 <Link href={"/projects/projects/" + task.project.id} style={{ textDecoration: 'none' }}>
                                                     <Typography variant="h6" component="div">{task.project.name}</Typography>
                                                 </Link> :
-                                                getUserChip(task.project, props.unsetProject, props.setProject, props.showEditButton)
+                                                getUserChip(task.project, props.unsetProject, props.setProject, disabled)
                                         }
                                     </Stack>
                                     <Stack direction={'row'} spacing={1} alignItems={'center'}>
                                         <Typography variant="body1">Assignee:</Typography>
                                         {
-                                            getUserChip(task.assignedPerson, props.removeManager, props.setManager, props.showEditButton)
+                                            getUserChip(task.assignedPerson, props.removeManager, props.setManager, disabled)
                                         }
                                     </Stack>
 
@@ -164,7 +166,7 @@ export default function TaskDetail(props: any) {
                                                     variant={props.showEditButton ? "filled" : "outlined"}
                                                     style={{ minWidth: 100 }}
                                                 /> :
-                                                getLabels(task.taskState, props.updateState, () => { }, props.showEditButton)
+                                                getLabels(task.taskState, props.updateState, () => { }, disabled)
                                         }
                                     </Stack>
                                 </Stack>
@@ -172,7 +174,7 @@ export default function TaskDetail(props: any) {
                                     {
                                         props.task.taskLabels.filter(val => !val.deleted).length !== 0 ?
                                             Array.from(props.task.taskLabels.filter(val => !val.deleted)).map((value: any) => (
-                                                getLabels(value, props.updateLabels, () => undefined, props.showEditButton)
+                                                getLabels(value, props.updateLabels, () => undefined, disabled)
                                             ))
                                             : props.showEditButton ?
                                                 <Chip
