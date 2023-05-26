@@ -398,7 +398,7 @@ export default function TaskDetailPage(props: any) {
                             aria-label="scrollable prevent tabs example"
                         >
                             <Tab label="Time spents" />
-                            <Tab label="Posts" />
+                            <Tab label="Post" />
                             {/* <Tab label="Participants" /> */}
                         </Tabs>
                     </Box>
